@@ -3,12 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>دليل المواصلات التفصيلي والمترو</title>
+  <title>وصلني | دليل المواصلات العامة الذكي</title>
   
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   
   <style>
+    :root {
+      --primary: #2563eb;       /* أزرق النقل والتوجيه */
+      --primary-dark: #1d4ed8;
+      --accent-bus: #f59e0b;     /* برتقالي السرفيس والميكروباص */
+      --accent-metro: #ef4444;   /* أحمر خطوط المترو */
+      --bg-main: #0f172a;        /* خلفية داكنة فخمة */
+      --bg-card: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -17,155 +29,336 @@
     }
 
     body {
-      background: #f0f4f8;
+      background-color: var(--bg-main);
+      color: var(--text-main);
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* --- Navigation Bar --- */
+    .navbar {
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-main);
+      font-weight: 800;
+      font-size: 1.4rem;
+    }
+
+    .brand-icon {
+      background: linear-gradient(135deg, var(--primary), var(--accent-bus));
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-link a {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+      padding: 8px 4px;
+    }
+
+    .nav-link a:hover,
+    .nav-link.active a {
+      color: var(--text-main);
+      border-bottom: 2px solid var(--primary);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary {
+      background: var(--border);
+      color: var(--text-main);
+    }
+
+    .btn-secondary:hover {
+      background: #475569;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+    }
+
+    /* --- Page Visibility --- */
+    .section-page {
+      display: none;
+    }
+
+    .section-page.active-page {
+      display: block;
+    }
+
+    /* --- Landing Hero Section --- */
+    .hero-section {
+      padding: 80px 20px 60px;
+      text-align: center;
+      background: radial-gradient(circle at top, rgba(37, 99, 235, 0.15), transparent 70%);
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      background: rgba(37, 99, 235, 0.2);
+      border: 1px solid var(--primary);
+      border-radius: 20px;
+      color: #60a5fa;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .hero-title {
+      font-size: 2.8rem;
+      font-weight: 900;
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+
+    .hero-title span.highlight-bus { color: var(--accent-bus); }
+    .hero-title span.highlight-metro { color: var(--accent-metro); }
+
+    .hero-subtitle {
+      max-width: 700px;
+      margin: 0 auto 36px;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
+    /* --- Features Grid --- */
+    .features-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .section-title h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.3);
+    }
+
+    .feature-icon-wrapper {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 18px;
+    }
+
+    .icon-bus { background: rgba(245, 158, 11, 0.2); color: var(--accent-bus); }
+    .icon-metro { background: rgba(239, 68, 68, 0.2); color: var(--accent-metro); }
+    .icon-route { background: rgba(37, 99, 235, 0.2); color: var(--primary); }
+
+    .feature-card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+
+    .feature-card p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    /* --- Route Planner Section --- */
+    .planner-container {
+      min-height: calc(100vh - 150px);
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 15px;
+      padding: 40px 20px;
     }
 
-    .app-card {
-      background: #ffffff;
+    .planner-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
       width: 100%;
-      max-width: 500px;
-      padding: 24px;
-      border-radius: 18px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+      max-width: 540px;
+      padding: 32px;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
     }
 
-    .header {
-      text-align: center;
-      margin-bottom: 22px;
-    }
-
-    .header h1 {
-      font-size: 1.45rem;
-      color: #0f172a;
-      margin-bottom: 6px;
-    }
-
-    .header p {
-      font-size: 0.85rem;
-      color: #64748b;
-    }
-
-    .input-group {
-      margin-bottom: 15px;
+    .form-group {
+      margin-bottom: 18px;
       position: relative;
     }
 
-    .input-group label {
+    .form-group label {
       display: block;
-      font-size: 0.82rem;
+      font-size: 0.85rem;
       font-weight: 700;
-      color: #334155;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      color: var(--text-muted);
     }
 
-    .input-field {
+    .input-control {
       width: 100%;
-      padding: 12px 14px;
-      border: 1.5px solid #cbd5e1;
-      border-radius: 10px;
-      font-size: 0.9rem;
+      padding: 14px 16px;
+      background: #0f172a;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-main);
+      font-size: 0.95rem;
       outline: none;
-      transition: border-color 0.2s;
     }
 
-    .input-field:focus {
-      border-color: #2563eb;
+    .input-control:focus {
+      border-color: var(--primary);
     }
 
-    .suggestions {
+    .suggestions-list {
       position: absolute;
-      top: 100%;
-      right: 0;
-      left: 0;
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 10px;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-      max-height: 200px;
+      top: 100%; right: 0; left: 0;
+      background: #1e293b;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      max-height: 180px;
       overflow-y: auto;
-      z-index: 1000;
+      z-index: 100;
       display: none;
-      margin-top: 4px;
+      margin-top: 6px;
     }
 
     .sug-item {
-      padding: 10px 14px;
+      padding: 12px 16px;
       cursor: pointer;
-      font-size: 0.85rem;
-      color: #334155;
-      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.88rem;
+      border-bottom: 1px solid var(--border);
     }
 
     .sug-item:hover {
-      background: #eff6ff;
-      color: #2563eb;
+      background: var(--primary);
+      color: #fff;
     }
 
-    .btn-plan {
-      width: 100%;
-      padding: 14px;
-      background: #2563eb;
-      color: #ffffff;
-      border: none;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 5px;
-    }
-
-    .btn-plan:hover {
-      background: #1d4ed8;
-    }
-
-    /* Modal Display */
-    .modal {
+    /* --- Modals & Popups --- */
+    .modal-backdrop {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(15, 23, 42, 0.65);
-      backdrop-filter: blur(4px);
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(8px);
       display: none;
       justify-content: center;
       align-items: center;
       z-index: 2000;
-      padding: 12px;
+      padding: 15px;
     }
 
-    .modal-box {
-      background: #ffffff;
+    .modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
       width: 100%;
-      max-width: 950px;
-      height: 90vh;
-      border-radius: 18px;
+      max-width: 900px;
+      height: 85vh;
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
 
     .modal-header {
-      padding: 16px 20px;
-      background: #1e293b;
-      color: #fff;
+      padding: 18px 24px;
+      background: #0f172a;
+      border-bottom: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .modal-header h3 {
-      font-size: 1.05rem;
-    }
-
     .close-btn {
-      background: #334155;
+      background: var(--border);
       border: none;
-      color: #fff;
-      width: 30px;
-      height: 30px;
+      color: var(--text-main);
+      width: 34px; height: 34px;
       border-radius: 50%;
       cursor: pointer;
       font-weight: bold;
@@ -177,15 +370,12 @@
       overflow: hidden;
     }
 
-    #map {
-      flex: 1;
-      height: 100%;
-    }
+    #map { flex: 1; height: 100%; }
 
     .details-pane {
-      width: 420px;
-      background: #f8fafc;
-      border-left: 1px solid #e2e8f0;
+      width: 400px;
+      background: #0f172a;
+      border-left: 1px solid var(--border);
       padding: 20px;
       overflow-y: auto;
       display: flex;
@@ -193,111 +383,196 @@
       gap: 16px;
     }
 
-    .route-summary {
-      background: #ffffff;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
+    .summary-box {
+      background: var(--bg-card);
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
       display: flex;
-      justify-content: space-between;
+      justify-content: space-around;
       text-align: center;
     }
 
-    .summary-val {
-      font-size: 1.1rem;
-      font-weight: 800;
-      color: #2563eb;
-    }
-
-    .summary-lbl {
-      font-size: 0.75rem;
-      color: #64748b;
-    }
-
-    .timeline {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      position: relative;
-    }
+    .summary-val { font-size: 1.2rem; font-weight: 800; color: var(--accent-bus); }
+    .summary-lbl { font-size: 0.75rem; color: var(--text-muted); }
 
     .step-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 14px;
       font-size: 0.88rem;
       line-height: 1.5;
-      color: #1e293b;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.02);
     }
 
-    .step-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 6px;
-    }
-
-    .badge {
+    .step-badge {
       padding: 3px 8px;
       border-radius: 6px;
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       font-weight: bold;
       color: #fff;
     }
 
-    .bg-microbus { background-color: #d97706; }
-    .bg-metro { background-color: #dc2626; }
-    .bg-transfer { background-color: #7c3aed; }
-    .bg-walk { background-color: #64748b; }
+    .bg-microbus { background: var(--accent-bus); }
+    .bg-metro { background: var(--accent-metro); }
+    .bg-transfer { background: #8b5cf6; }
+    .bg-walk { background: #64748b; }
 
-    .step-title {
-      font-weight: 700;
-      font-size: 0.9rem;
-      color: #0f172a;
+    /* Prototype Notification Modal */
+    .proto-box {
+      background: var(--bg-card);
+      border: 1px solid var(--primary);
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 420px;
+      text-align: center;
+    }
+
+    .proto-icon { font-size: 3rem; margin-bottom: 15px; }
+
+    /* Footer */
+    footer {
+      background: #0b1120;
+      border-top: 1px solid var(--border);
+      padding: 24px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: auto;
     }
 
     @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hero-title { font-size: 2rem; }
       .modal-body { flex-direction: column-reverse; }
-      .details-pane { width: 100%; height: 60%; border-left: none; border-top: 1px solid #e2e8f0; }
-      #map { height: 40%; }
+      .details-pane { width: 100%; height: 55%; border-left: none; border-top: 1px solid var(--border); }
+      #map { height: 45%; }
     }
   </style>
 </head>
 <body>
 
-  <div class="app-card">
-    <div class="header">
-      <h1>دليل المواصلات والتوجيه التفصيلي</h1>
-      <p>توجيه خطوة بخطوة: ميكروباص، مترو، محطات التبديل والمشي</p>
-    </div>
+  <!-- Header / Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="#" class="brand-logo" onclick="navigateTo('home'); return false;">
+        <div class="brand-icon">🚌</div>
+        <span>وصلني</span>
+      </a>
 
-    <div class="input-group">
-      <label>نقطة الانطلاق</label>
-      <input type="text" id="startInput" class="input-field" value="موقعي الحالي (GPS)" readonly>
-    </div>
+      <ul class="nav-links">
+        <li class="nav-link active" id="nav-home"><a href="#" onclick="navigateTo('home'); return false;">الرئيسية</a></li>
+        <li class="nav-link" id="nav-planner"><a href="#" onclick="navigateTo('planner'); return false;">التوجيه والتخطيط</a></li>
+        <li class="nav-link"><a href="#" onclick="triggerPrototypeNotice('خريطة المترو التفاعلية')">خريطة المترو</a></li>
+        <li class="nav-link"><a href="#" onclick="triggerPrototypeNotice('حاسبة التعرفة والأسعار')">أسعار التذاكر</a></li>
+      </ul>
 
-    <div class="input-group">
-      <label>مكان الوصول (الوجهة)</label>
-      <input type="text" id="destInput" class="input-field" placeholder="مثال: عباس العقاد، رمسيس، التحرير، الكوربة..." oninput="searchLocation(this.value)">
-      <div id="suggestions" class="suggestions"></div>
+      <div class="nav-actions">
+        <button class="btn btn-secondary" onclick="triggerPrototypeNotice('تسجيل الحساب')">تسجيل الدخول</button>
+        <button class="btn btn-primary" onclick="navigateTo('planner')">خطط رحلتك</button>
+      </div>
     </div>
+  </nav>
 
-    <button class="btn-plan" onclick="planTrip()">عرض خطة المواصلات التفصيلية</button>
+  <!-- HOME PAGE -->
+  <div id="page-home" class="section-page active-page">
+    <section class="hero-section">
+      <span class="hero-badge">⚡ النسخة التجريبية (Prototype)</span>
+      <h1 class="hero-title">
+        دليلك الشامل لركوب <span class="highlight-bus">الميكروباص</span> و <span class="highlight-metro">المترو</span>
+      </h1>
+      <p class="hero-subtitle">
+        نظام توجيه مصري ذكي يربط بين المواصلات الداخلية، الميكروباص، السرفيس، وخطوط المترو محددًا لك اسم المحطة والرصيف والتكلفة.
+      </p>
+      <div style="display: flex; gap: 15px; justify-content: center;">
+        <button class="btn btn-primary" style="padding: 14px 28px; font-size: 1rem;" onclick="navigateTo('planner')">ابدأ تحديد مسارك الآن</button>
+        <button class="btn btn-secondary" style="padding: 14px 28px; font-size: 1rem;" onclick="triggerPrototypeNotice('عرض شبكة المواصلات')">عرض الشبكة الكاملة</button>
+      </div>
+    </section>
+
+    <!-- PROTOTYPE FEATURES GRID -->
+    <section class="features-section">
+      <div class="section-title">
+        <h2>مميزات النظام الذكي</h2>
+        <p style="color: var(--text-muted);">اضغط على أي ميزة لمعاينة وظائف النظام المستقبلي</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card" onclick="triggerPrototypeNotice('متابعة الميكروباص اللحظية (Live Bus Tracking)')">
+          <div class="feature-icon-wrapper icon-bus">🚐</div>
+          <h3>تتبع الميكروباصات</h3>
+          <p>معرفة أماكن تواجد مواقف السرفيس والميكروباصات وقيمة الأجرة الرسمية لكل خط.</p>
+        </div>
+
+        <div class="feature-card" onclick="triggerPrototypeNotice('توجيه رصيف المترو والتبديل')">
+          <div class="feature-icon-wrapper icon-metro">🚇</div>
+          <h3>توجيه رصيف المترو</h3>
+          <p>تحديد اسم محطة التبديل (السادات/الشهداء/ناصر) واسم الاتجاه المكتوب على رصيف القطار.</p>
+        </div>
+
+        <div class="feature-card" onclick="triggerPrototypeNotice('حساب التكلفة الإجمالية')">
+          <div class="feature-icon-wrapper icon-route">💰</div>
+          <h3>حاسبة التكلفة والوقت</h3>
+          <p>تقدير مالي دقيق لمجموع مصاريف الرحلة (ميكروباص + تذكرة المترو) مع زمن الوصول.</p>
+        </div>
+
+        <div class="feature-card" onclick="triggerPrototypeNotice('تنبيهات الازدحام المروري')">
+          <div class="feature-icon-wrapper icon-bus">⚠️</div>
+          <h3>تنبيهات الازدحام</h3>
+          <p>إشعارات بمحاور المحطات المزدحمة اقتراح مسارات موازية أسرع وقت الذروة.</p>
+        </div>
+
+        <div class="feature-card" onclick="triggerPrototypeNotice('الملاحة بدون إنترنت (Offline Mode)')">
+          <div class="feature-icon-wrapper icon-route">📡</div>
+          <h3>العمل بدون إنترنت</h3>
+          <p>إمكانية حفظ مسارات المترو والمواقف وتصفح دليل الخطوات دون الحاجة لاتصال بالشبكة.</p>
+        </div>
+
+        <div class="feature-card" onclick="triggerPrototypeNotice('دليل محطات المنوريل والقطار الكهربائي')">
+          <div class="feature-icon-wrapper icon-metro">🚝</div>
+          <h3>شبكة المنوريل والـ LRT</h3>
+          <p>ربط مسارات المترو والميكروباص بخطوط المنوريل الجديدة والقطار الكهربائي الخفيف.</p>
+        </div>
+      </div>
+    </section>
   </div>
 
-  <!-- Modal -->
-  <div id="tripModal" class="modal">
-    <div class="modal-box">
+  <!-- PLANNER PAGE -->
+  <div id="page-planner" class="section-page">
+    <div class="planner-container">
+      <div class="planner-card">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h2 style="font-size: 1.5rem; margin-bottom: 6px;">خطط رحلتك بالتفصيل</h2>
+          <p style="color: var(--text-muted); font-size: 0.88rem;">حدد المكان وسيقوم المحرك برسم مسار المواصلات والمترو</p>
+        </div>
+
+        <div class="form-group">
+          <label>نقطة الانطلاق</label>
+          <input type="text" id="startInput" class="input-control" value="موقعي الحالي (GPS)" readonly>
+        </div>
+
+        <div class="form-group">
+          <label>مكان الوصول (الوجهة)</label>
+          <input type="text" id="destInput" class="input-control" placeholder="أدخل اسم المنطقة أو الشارع (مثل: عباس العقاد، التحرير...)" oninput="searchLocation(this.value)">
+          <div id="suggestions" class="suggestions-list"></div>
+        </div>
+
+        <button class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 1rem; margin-top: 10px;" onclick="planTrip()">عرض دليل ركوب المواصلات</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRIP DETAILS MODAL -->
+  <div id="tripModal" class="modal-backdrop">
+    <div class="modal-content">
       <div class="modal-header">
         <h3 id="modalTitle">تفاصيل مسار الرحلة</h3>
-        <button class="close-btn" onclick="closeModal()">✕</button>
+        <button class="close-btn" onclick="closeModal('tripModal')">✕</button>
       </div>
       <div class="modal-body">
         <div id="map"></div>
         <div class="details-pane">
-          <div class="route-summary">
+          <div class="summary-box">
             <div>
               <div class="summary-val" id="totalCost">0 ج.م</div>
               <div class="summary-lbl">التكلفة المتوقعة</div>
@@ -306,70 +581,71 @@
               <div class="summary-val" id="totalTime">0 دقيقة</div>
               <div class="summary-lbl">الوقت التقديري</div>
             </div>
-            <div>
-              <div class="summary-val" id="totalTransits">0</div>
-              <div class="summary-lbl">المواصلات المستخدمة</div>
-            </div>
           </div>
-
-          <h4 style="font-size: 0.9rem; color: #334155; margin-top: 5px;">دليل الخطوات التفصيلي:</h4>
-          <div class="timeline" id="timelineSteps"></div>
+          <h4 style="font-size: 0.9rem; color: var(--text-muted);">خطوات ركوب المواصلات:</h4>
+          <div id="timelineSteps" style="display: flex; flex-direction: column; gap: 12px;"></div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- PROTOTYPE NOTICE MODAL -->
+  <div id="protoModal" class="modal-backdrop">
+    <div class="proto-box">
+      <div class="proto-icon">🚧</div>
+      <h3 style="margin-bottom: 10px;" id="protoTitle">ميزة تحت التطوير</h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;" id="protoDesc">
+        هذا التطبيق عبارة عن نموذج أولي (Prototype). الميزة التي اخترتها قيد البرمجة وسوف تتوفر في الإصدار النهائي.
+      </p>
+      <button class="btn btn-primary" style="width: 100%;" onclick="closeModal('protoModal')">فهمت ذلك</button>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 دليل وصلني للمواصلات العامة - Prototype Version</p>
+  </footer>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
+    // System Navigation & Prototype Triggering
+    function navigateTo(pageId) {
+      document.querySelectorAll('.section-page').forEach(page => page.classList.remove('active-page'));
+      document.getElementById('page-' + pageId).classList.add('active-page');
+
+      document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+      if(pageId === 'home') document.getElementById('nav-home').classList.add('active');
+      if(pageId === 'planner') document.getElementById('nav-planner').classList.add('active');
+    }
+
+    function triggerPrototypeNotice(featureName) {
+      document.getElementById('protoTitle').innerText = `خاصية: ${featureName}`;
+      document.getElementById('protoDesc').innerText = `الميزة (${featureName}) تعتمد على قاعدة بيانات الحساسات والتتبع المباشر وهي حالياً نموذج عرض (Prototype) ضمن واجهة البرنامج.`;
+      document.getElementById('protoModal').style.display = 'flex';
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+
     // --- Cairo Metro Graph Database ---
     const METRO_STATIONS = [
-      // Line 1 (Helwan - El Marg)
       { name: "حلوان", line: 1, lat: 29.8414, lon: 31.3008, order: 1, term1: "حلوان", term2: "المرج الجديدة" },
-      { name: "جامعة حلوان", line: 1, lat: 29.8665, lon: 31.3152, order: 2, term1: "حلوان", term2: "المرج الجديدة" },
-      { name: "المعادي", line: 1, lat: 29.9583, lon: 31.2581, order: 10, term1: "حلوان", term2: "المرج الجديدة" },
       { name: "السادات", line: 1, isTransfer: true, lines: [1, 2], lat: 30.0444, lon: 31.2357, order: 18, term1: "حلوان", term2: "المرج الجديدة" },
       { name: "ناصر", line: 1, isTransfer: true, lines: [1, 3], lat: 30.0532, lon: 31.2392, order: 19, term1: "حلوان", term2: "المرج الجديدة" },
       { name: "الشهداء", line: 1, isTransfer: true, lines: [1, 2], lat: 30.0614, lon: 31.2464, order: 20, term1: "حلوان", term2: "المرج الجديدة" },
-      { name: "سراي القبة", line: 1, lat: 30.0981, lon: 31.3001, order: 25, term1: "حلوان", term2: "المرج الجديدة" },
       { name: "المرج الجديدة", line: 1, lat: 30.1636, lon: 31.3382, order: 35, term1: "حلوان", term2: "المرج الجديدة" },
-
-      // Line 2 (Shubra - El Mounib)
       { name: "المنيب", line: 2, lat: 29.9811, lon: 31.2123, order: 1, term1: "المنيب", term2: "شبرا الخيمة" },
-      { name: "جامعة القاهرة", line: 2, isTransfer: true, lines: [2, 3], lat: 30.0261, lon: 31.2082, order: 5, term1: "المنيب", term2: "شبرا الخيمة" },
-      { name: "الدقي", line: 2, lat: 30.0384, lon: 31.2119, order: 7, term1: "المنيب", term2: "شبرا الخيمة" },
       { name: "العتبة", line: 2, isTransfer: true, lines: [2, 3], lat: 30.0526, lon: 31.2472, order: 11, term1: "المنيب", term2: "شبرا الخيمة" },
       { name: "شبرا الخيمة", line: 2, lat: 30.1225, lon: 31.2442, order: 20, term1: "المنيب", term2: "شبرا الخيمة" },
-
-      // Line 3 (Adly Mansour - Kit Kat / Cairo Univ)
       { name: "عدلي منصور", line: 3, lat: 30.1472, lon: 31.4211, order: 1, term1: "عدلي منصور", term2: "الكيت كات" },
-      { name: "الأهرام (الكوربة)", line: 3, lat: 30.0917, lon: 31.3267, order: 10, term1: "عدلي منصور", term2: "الكيت كات" },
-      { name: "الاستاد", line: 3, lat: 30.0732, lon: 31.3182, order: 13, term1: "عدلي منصور", term2: "الكيت كات" },
-      { name: "عباس العقاد (المنوريل)", line: 3, lat: 30.0652, lon: 31.3321, order: 14, term1: "عدلي منصور", term2: "الكيت كات" },
-      { name: "الكيت كات", line: 3, lat: 30.0631, lon: 31.2128, order: 22, term1: "عدلي منصور", term2: "الكيت كات" }
+      { name: "عباس العقاد", line: 3, lat: 30.0652, lon: 31.3321, order: 14, term1: "عدلي منصور", term2: "الكيت كات" }
     ];
 
-    let userCoords = [30.0444, 31.2357]; // القاهرة افتراضياً (ميدان التحرير)
+    let userCoords = [30.0444, 31.2357];
     let destCoords = null;
     let destName = "";
-    let map = null;
-    let mapMarkers = [];
-    let mapPolyline = null;
-    let searchDebounce = null;
-
-    window.onload = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            userCoords = [pos.coords.latitude, pos.coords.longitude];
-            document.getElementById('startInput').value = "تم تحديد موقعك الحالي (GPS) ✓";
-          },
-          () => {
-            document.getElementById('startInput').value = "موقع افتراضي (ميدان التحرير، القاهرة)";
-          }
-        );
-      }
-    };
+    let map = null, mapMarkers = [], mapPolyline = null, searchDebounce = null;
 
     function searchLocation(query) {
       clearTimeout(searchDebounce);
@@ -400,14 +676,10 @@
     }
 
     function findNearestMetro(coords) {
-      let nearest = null;
-      let minDist = Infinity;
+      let nearest = null, minDist = Infinity;
       METRO_STATIONS.forEach(st => {
         let d = getDistanceKm(coords[0], coords[1], st.lat, st.lon);
-        if (d < minDist) {
-          minDist = d;
-          nearest = st;
-        }
+        if (d < minDist) { minDist = d; nearest = st; }
       });
       return { station: nearest, distance: minDist };
     }
@@ -416,15 +688,13 @@
       const R = 6371;
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
       return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
     }
 
     function planTrip() {
       const val = document.getElementById('destInput').value.trim();
-      if (!val) { alert("من فضلك اكتب مكان الوصول أولاً!"); return; }
+      if (!val) { alert("يرجى إدخال وجهة الوصول أولاً!"); return; }
 
       if (!destCoords) {
         fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&countrycodes=eg&limit=1`)
@@ -434,8 +704,6 @@
               destCoords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
               destName = data[0].display_name.split(',')[0];
               generateDetailedSteps();
-            } else {
-              alert("لم نتمكن من العثور على هذا العنوان بدقة، اختر مكاناً معروفاً.");
             }
           });
       } else {
@@ -450,155 +718,1608 @@
       timeline.innerHTML = '';
 
       let steps = [];
-      let totalCost = 0;
-      let totalTime = 0;
-      let transitsCount = 0;
+      let totalCost = 0, totalTime = 0;
 
-      // 1. FIRST LEG: Origin to Start Metro
-      if (startMetro.distance < 0.9) {
-        steps.push({
-          badge: "مشي", class: "bg-walk", title: "السير للمترو",
-          desc: `اخرج وامشِ لمدة <b>${Math.round(startMetro.distance * 12)} دقائق</b> (${(startMetro.distance*1000).toFixed(0)} متر) للوصول إلى <b>محطة مترو ${startMetro.station.name}</b>.`
-        });
-        totalTime += Math.round(startMetro.distance * 12);
+      if (startMetro.distance < 0.8) {
+        steps.push({ badge: "مشي", class: "bg-walk", title: "مشي للمترو", desc: `امشِ نحو <b>محطة مترو ${startMetro.station.name}</b>.` });
+        totalTime += 10;
       } else {
-        steps.push({
-          badge: "ميكروباص / سرفيس", class: "bg-microbus", title: "مواصفات الميكروباص الأول",
-          desc: `اركب ميكروباص/سرفيس متجه نحو <b>محطة مترو ${startMetro.station.name}</b> أو الرئيسي المجاور لها. (الأجرة: حوالي 5 - 7 ج.م).`
-        });
-        totalCost += 6;
-        totalTime += 15;
-        transitsCount++;
+        steps.push({ badge: "سرفيس / ميكروباص", class: "bg-microbus", title: "مواصفات الميكروباص الأول", desc: `اركب ميكروباص للوصول لمترو <b>${startMetro.station.name}</b>. (الأجرة: ~6 ج.م)` });
+        totalCost += 6; totalTime += 15;
       }
 
-      // 2. METRO LEG: Start Metro to End Metro
       const s1 = startMetro.station;
       const s2 = endMetro.station;
 
-      if (s1.line === s2.line) {
-        // Direct line
-        const direction = s2.order > s1.order ? s1.term2 : s1.term1;
-        const stopCount = Math.abs(s2.order - s1.order);
-        const metroCost = stopCount <= 9 ? 8 : (stopCount <= 16 ? 10 : 15);
+      steps.push({ badge: `مترو - الخط ${s1.line}`, class: "bg-metro", title: `اركب من [${s1.name}]`, desc: `ركوب المترو اتجاه <b>[رصيف ${s1.term2}]</b> واخرج عند محطة <b>${s2.name}</b>.` });
+      totalCost += 8; totalTime += 20;
 
-        steps.push({
-          badge: `مترو - الخط ${s1.line}`, class: "bg-metro", title: `ركوب المترو من [${s1.name}]`,
-          desc: `ادخل المحطة واركب المترو (<b>الخط ${s1.line}</b>) اتجاه <b>[رصيف ${direction}]</b>.<br>استمر لمدة <b>${stopCount} محطات</b> واقطع تذكرة بـ (${metroCost} ج.م).`
-        });
+      steps.push({ badge: "وصول نهائي", class: "bg-walk", title: "الوصول للوجهة", desc: `اخرج للشارع وامشِ بضع دقائق للوصول إلى <b>${destName}</b>.` });
 
-        steps.push({
-          badge: "نزول", class: "bg-metro", title: `الوصول لمحطة [${s2.name}]`,
-          desc: `انزل في محطة <b>${s2.name}</b> وتوجه نحو بوابة الخروج.`
-        });
-
-        totalCost += metroCost;
-        totalTime += stopCount * 2.5;
-        transitsCount++;
-      } else {
-        // Transfer line required!
-        // Find best transfer station
-        let transferSt = METRO_STATIONS.find(st => st.isTransfer && st.lines.includes(s1.line) && st.lines.includes(s2.line));
-        if (!transferSt) transferSt = METRO_STATIONS.find(st => st.name === "الشهداء" || st.name === "السادات" || st.name === "العتبة");
-
-        const dir1 = transferSt.order > s1.order ? s1.term2 : s1.term1;
-        const stops1 = Math.abs(transferSt.order - s1.order) || 4;
-        const dir2 = s2.order > transferSt.order ? s2.term2 : s2.term1;
-        const stops2 = Math.abs(s2.order - transferSt.order) || 4;
-
-        steps.push({
-          badge: `مترو - الخط ${s1.line}`, class: "bg-metro", title: `اركب من [${s1.name}]`,
-          desc: `اركب المترو (<b>الخط ${s1.line}</b>) اتجاه <b>[رصيف ${dir1}]</b> واعد <b>${stops1} محطات</b>.`
-        });
-
-        steps.push({
-          badge: "تبديل خط", class: "bg-transfer", title: `تبديل في محطة [${transferSt.name}]`,
-          desc: `انزل في محطة <b>${transferSt.name}</b> وادخل صالة التبديل للتحويل إلى <b>الخط ${s2.line}</b> باتجاه <b>[رصيف ${dir2}]</b>.`
-        });
-
-        steps.push({
-          badge: `مترو - الخط ${s2.line}`, class: "bg-metro", title: `الوصول لـ [${s2.name}]`,
-          desc: `اركب قطار الخط الثاني/الثالث واعد <b>${stops2} محطات</b> حتى تصل إلى محطة <b>${s2.name}</b> ثم اخرج.`
-        });
-
-        totalCost += 12;
-        totalTime += (stops1 + stops2) * 2.5 + 7; // +7 min for transfer walk
-        transitsCount += 2;
-      }
-
-      // 3. LAST LEG: End Metro to Final Destination
-      if (endMetro.distance < 0.8) {
-        steps.push({
-          badge: "مشي للوصول", class: "bg-walk", title: "الوصول النهائي مشياً",
-          desc: `من خارج محطة <b>${s2.name}</b>، اتبع الخريطة وامشِ حوالي <b>${Math.round(endMetro.distance * 12)} دقائق</b> للوصول مباشرة إلى <b>${destName}</b>.`
-        });
-        totalTime += Math.round(endMetro.distance * 12);
-      } else {
-        steps.push({
-          badge: "ميكروباص / سرفيس", class: "bg-microbus", title: "المواصلة الأخيرة للوجهة",
-          desc: `اخرج من محطة المترو واركب ميكروباص/سرفيس متجه مباشرة إلى <b>${destName}</b> أو الشارع الرئيسي المجاور له. (الأجرة: ~5 - 8 ج.م).`
-        });
-        totalCost += 7;
-        totalTime += 12;
-        transitsCount++;
-      }
-
-      // Render UI
       document.getElementById('totalCost').innerText = `~${totalCost} ج.م`;
-      document.getElementById('totalTime').innerText = `~${Math.round(totalTime)} دقيقة`;
-      document.getElementById('totalTransits').innerText = `${transitsCount} مواصلات`;
+      document.getElementById('totalTime').innerText = `~${totalTime} دقيقة`;
 
       steps.forEach(st => {
         const div = document.createElement('div');
         div.className = 'step-card';
-        div.innerHTML = `
-          <div class="step-header">
-            <span class="badge ${st.class}">${st.badge}</span>
-            <span class="step-title">${st.title}</span>
-          </div>
-          <div>${st.desc}</div>
-        `;
+        div.innerHTML = `<span class="step-badge ${st.class}">${st.badge}</span> <b style="margin-right: 6px;">${st.title}</b><p style="margin-top: 6px; color: var(--text-muted);">${st.desc}</p>`;
         timeline.appendChild(div);
       });
 
-      openModal();
-      renderMap(s1, s2);
-    }
-
-    function openModal() {
       document.getElementById('tripModal').style.display = 'flex';
-      document.getElementById('modalTitle').innerText = `خطة المواصلات التفصيلية إلى: ${destName}`;
-    }
-
-    function closeModal() {
-      document.getElementById('tripModal').style.display = 'none';
+      renderMap(s1, s2);
     }
 
     function renderMap(s1, s2) {
       if (!map) {
         map = L.map('map');
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap'
-        }).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
       }
-
       setTimeout(() => {
         map.invalidateSize();
         mapMarkers.forEach(m => map.removeLayer(m));
         if (mapPolyline) map.removeLayer(mapPolyline);
         mapMarkers = [];
 
-        const p1 = L.marker(userCoords).addTo(map).bindPopup("موقعي الحالي");
-        const p2 = L.marker([s1.lat, s1.lon]).addTo(map).bindPopup(`مترو ${s1.name}`);
-        const p3 = L.marker([s2.lat, s2.lon]).addTo(map).bindPopup(`مترو ${s2.name}`);
-        const p4 = L.marker(destCoords).addTo(map).bindPopup(destName);
+        const p1 = L.marker(userCoords).addTo(map);
+        const p2 = L.marker([s1.lat, s1.lon]).addTo(map);
+        const p3 = L.marker(destCoords).addTo(map);
+        mapMarkers.push(p1, p2, p3);
 
-        mapMarkers.push(p1, p2, p3, p4);
-
-        const coords = [userCoords, [s1.lat, s1.lon], [s2.lat, s2.lon], destCoords];
-        mapPolyline = L.polyline(coords, { color: '#2563eb', weight: 4, dashArray: '6, 6' }).addTo(map);
-
+        const coords = [userCoords, [s1.lat, s1.lon], destCoords];
+        mapPolyline = L.polyline(coords, { color: '#2563eb', weight: 5 }).addTo(map);
         map.fitBounds(mapPolyline.getBounds(), { padding: [30, 30] });
-      }, 250);
+      }, 200);
+    }
+  </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>وصلني | دليل المواصلات العامة الذكي</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <style>
+    :root {
+      --primary: #2563eb;       /* أزرق النقل والتوجيه */
+      --primary-dark: #1d4ed8;
+      --accent-bus: #f59e0b;     /* برتقالي السرفيس والميكروباص */
+      --accent-metro: #ef4444;   /* أحمر خطوط المترو */
+      --bg-main: #0f172a;        /* خلفية داكنة فخمة */
+      --bg-card: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* --- Navigation Bar --- */
+    .navbar {
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-main);
+      font-weight: 800;
+      font-size: 1.4rem;
+    }
+
+    .brand-icon {
+      background: linear-gradient(135deg, var(--primary), var(--accent-bus));
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-link a {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+      padding: 8px 4px;
+    }
+
+    .nav-link a:hover,
+    .nav-link.active a {
+      color: var(--text-main);
+      border-bottom: 2px solid var(--primary);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary {
+      background: var(--border);
+      color: var(--text-main);
+    }
+
+    .btn-secondary:hover {
+      background: #475569;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+    }
+
+    /* --- Page Visibility --- */
+    .section-page {
+      display: none;
+    }
+
+    .section-page.active-page {
+      display: block;
+    }
+
+    /* --- Landing Hero Section --- */
+    .hero-section {
+      padding: 80px 20px 60px;
+      text-align: center;
+      background: radial-gradient(circle at top, rgba(37, 99, 235, 0.15), transparent 70%);
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      background: rgba(37, 99, 235, 0.2);
+      border: 1px solid var(--primary);
+      border-radius: 20px;
+      color: #60a5fa;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .hero-title {
+      font-size: 2.8rem;
+      font-weight: 900;
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+
+    .hero-title span.highlight-bus { color: var(--accent-bus); }
+    .hero-title span.highlight-metro { color: var(--accent-metro); }
+
+    .hero-subtitle {
+      max-width: 700px;
+      margin: 0 auto 36px;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
+    /* --- Features Grid --- */
+    .features-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .section-title h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.3);
+    }
+
+    .feature-icon-wrapper {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 18px;
+    }
+
+    .icon-bus { background: rgba(245, 158, 11, 0.2); color: var(--accent-bus); }
+    .icon-metro { background: rgba(239, 68, 68, 0.2); color: var(--accent-metro); }
+    .icon-route { background: rgba(37, 99, 235, 0.2); color: var(--primary); }
+
+    .feature-card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+
+    .feature-card p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    /* --- Route Planner Section --- */
+    .planner-container {
+      min-height: calc(100vh - 150px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .planner-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      width: 100%;
+      max-width: 540px;
+      padding: 32px;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+      position: relative;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-muted);
+    }
+
+    .input-control {
+      width: 100%;
+      padding: 14px 16px;
+      background: #0f172a;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .input-control:focus {
+      border-color: var(--primary);
+    }
+
+    .suggestions-list {
+      position: absolute;
+      top: 100%; right: 0; left: 0;
+      background: #1e293b;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      max-height: 180px;
+      overflow-y: auto;
+      z-index: 100;
+      display: none;
+      margin-top: 6px;
+    }
+
+    .sug-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sug-item:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    /* --- Modals & Popups --- */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      padding: 15px;
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 900px;
+      height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      background: #0f172a;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .close-btn {
+      background: var(--border);
+      border: none;
+      color: var(--text-main);
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .modal-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    #map { flex: 1; height: 100%; }
+
+    .details-pane {
+      width: 400px;
+      background: #0f172a;
+      border-left: 1px solid var(--border);
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .summary-box {
+      background: var(--bg-card);
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+    }
+
+    .summary-val { font-size: 1.2rem; font-weight: 800; color: var(--accent-bus); }
+    .summary-lbl { font-size: 0.75rem; color: var(--text-muted); }
+
+    .step-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .step-badge {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .bg-microbus { background: var(--accent-bus); }
+    .bg-metro { background: var(--accent-metro); }
+    .bg-transfer { background: #8b5cf6; }
+    .bg-walk { background: #64748b; }
+
+    /* Prototype Notification Modal */
+    .proto-box {
+      background: var(--bg-card);
+      border: 1px solid var(--primary);
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 420px;
+      text-align: center;
+    }
+
+    .proto-icon { font-size: 3rem; margin-bottom: 15px; }
+
+    /* Footer */
+    footer {
+      background: #0b1120;
+      border-top: 1px solid var(--border);
+      padding: 24px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: auto;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hero-title { font-size: 2rem; }
+      .modal-body { flex-direction: column-reverse; }
+      .details-pane { width: 100%; height: 55%; border-left: none; border-top: 1px solid var(--border); }
+      #map { height: 45%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header / Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="#" class="brand-logo" onclick="navigateTo('home'); return false;">
+        <div class="brand-icon">🚌</div>
+        <span>وصلني</span>
+      </a>
+
+      <ul class="nav-links">
+        <li class="nav-link active" id="nav-home"><a href="#" onclick="navigateTo('home'); return false;">الرئيسية</a></li>
+        <li class="nav-link" id="nav-planner"><a href="#" onclick="navigateTo('planner'); return false;">التوجيه والتخطيط</a></li>
+        <li class="nav-link"><a href="#" onclick="triggerPrototypeNotice('خريطة المترو التفاعلية')">خريطة المترو</a></li>
+        <li class="nav-link"><a href="#" onclick="triggerPrototypeNotice('حاسبة التعرفة والأسعار')">أسعار التذاكر</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <button class="btn btn-secondary" onclick="triggerPrototypeNotice('تسجيل الحساب')">تسجيل الدخول</button>
+        <button class="btn btn-primary" onclick="navigateTo('planner')">خطط رحلتك</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HOME PAGE -->
+  <div id="page-home" class="section-page active-page">
+    <section class="hero-section">
+      <span class="hero-badge">⚡ النسخة التجريبية (Prototype)</span>
+      <h1 class="hero-title">
+        دليلك الشامل لركوب <span class="highlight-bus">الميكروباص</span> و <span class="highlight-metro">المترو</span>
+      </h1>
+      <p class="hero-subtitle">
+        نظام توجيه مصري ذكي يربط بين المواصلات الداخلية، الميكروباص، السرفيس، وخطوط المترو محددًا لك اسم المحطة والرصيف والتكلفة.
+      </p>
+      <div style="display: flex; gap: 15px; justify-content: center;">
+        <button class="btn btn-primary" style="padding: 14px 28px; font-size: 1rem;" onclick="navigateTo('planner')">ابدأ تحديد مسارك الآن</button>
+        <button class="btn btn-secondary" style="padding: 14px 28px; font-size: 1rem;" onclick="triggerPrototypeNotice('عرض شبكة المواصلات')">عرض الشبكة الكاملة</button>
+      </div>
+    </section>
+
+    <!-- PROTOTYPE FEATURES GRID -->
+    <section class="features-section">
+      <div class="section-title">
+        <h2>مميزات النظام الذكي</h2>
+        <p style="color: var(--text-muted);">اضغط على أي ميزة لمعاينة وظائف النظام المستقبلي</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card" onclick="triggerPrototypeNotice('متابعة الميكروباص اللحظية (Live Bus Tracking)')">
+          <div class="feature-icon-wrapper icon-bus">🚐</div>
+          <h3>تتبع الميكروباصات</h3>
+          <p>معرفة أماكن تواجد مواقف السرفيس والميكروباصات وقيمة الأجرة الرسمية لكل خط.</p>
+        </div>
+
+        <div class="feature-card" onclick="triggerPrototypeNotice('توجيه رصيف المترو والتبديل')">
+          <div class="feature-icon-wrapper icon-metro">🚇</div>
+          <h3>توجيه رصيف المترو</h3>
+          <p>تحديد اسم محطة التبديل (السادات/الشهداء/ناصر) واسم الاتجاه المكتوب على رصيف القطار.</p>
+        </div>
+
+        <div class="feature-card" onclick="triggerPrototypeNotice('حساب التكلفة الإجمالية')">
+          <div class="feature-icon-wrapper icon-route">💰</div>
+          <h3>حاسبة التكلفة والوقت</h3>
+          <p>تقدير مالي دقيق لمجموع مصاريف الرحلة (ميكروباص + تذكرة المترو) مع زمن الوصول.</p>
+        </div>
+
+        <div class="feature-card" onclick="triggerPrototypeNotice('تنبيهات الازدحام المروري')">
+          <div class="feature-icon-wrapper icon-bus">⚠️</div>
+          <h3>تنبيهات الازدحام</h3>
+          <p>إشعارات بمحاور المحطات المزدحمة اقتراح مسارات موازية أسرع وقت الذروة.</p>
+        </div>
+
+        <div class="feature-card" onclick="triggerPrototypeNotice('الملاحة بدون إنترنت (Offline Mode)')">
+          <div class="feature-icon-wrapper icon-route">📡</div>
+          <h3>العمل بدون إنترنت</h3>
+          <p>إمكانية حفظ مسارات المترو والمواقف وتصفح دليل الخطوات دون الحاجة لاتصال بالشبكة.</p>
+        </div>
+
+        <div class="feature-card" onclick="triggerPrototypeNotice('دليل محطات المنوريل والقطار الكهربائي')">
+          <div class="feature-icon-wrapper icon-metro">🚝</div>
+          <h3>شبكة المنوريل والـ LRT</h3>
+          <p>ربط مسارات المترو والميكروباص بخطوط المنوريل الجديدة والقطار الكهربائي الخفيف.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- PLANNER PAGE -->
+  <div id="page-planner" class="section-page">
+    <div class="planner-container">
+      <div class="planner-card">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h2 style="font-size: 1.5rem; margin-bottom: 6px;">خطط رحلتك بالتفصيل</h2>
+          <p style="color: var(--text-muted); font-size: 0.88rem;">حدد المكان وسيقوم المحرك برسم مسار المواصلات والمترو</p>
+        </div>
+
+        <div class="form-group">
+          <label>نقطة الانطلاق</label>
+          <input type="text" id="startInput" class="input-control" value="موقعي الحالي (GPS)" readonly>
+        </div>
+
+        <div class="form-group">
+          <label>مكان الوصول (الوجهة)</label>
+          <input type="text" id="destInput" class="input-control" placeholder="أدخل اسم المنطقة أو الشارع (مثل: عباس العقاد، التحرير...)" oninput="searchLocation(this.value)">
+          <div id="suggestions" class="suggestions-list"></div>
+        </div>
+
+        <button class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 1rem; margin-top: 10px;" onclick="planTrip()">عرض دليل ركوب المواصلات</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRIP DETAILS MODAL -->
+  <div id="tripModal" class="modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">تفاصيل مسار الرحلة</h3>
+        <button class="close-btn" onclick="closeModal('tripModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="map"></div>
+        <div class="details-pane">
+          <div class="summary-box">
+            <div>
+              <div class="summary-val" id="totalCost">0 ج.م</div>
+              <div class="summary-lbl">التكلفة المتوقعة</div>
+            </div>
+            <div>
+              <div class="summary-val" id="totalTime">0 دقيقة</div>
+              <div class="summary-lbl">الوقت التقديري</div>
+            </div>
+          </div>
+          <h4 style="font-size: 0.9rem; color: var(--text-muted);">خطوات ركوب المواصلات:</h4>
+          <div id="timelineSteps" style="display: flex; flex-direction: column; gap: 12px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROTOTYPE NOTICE MODAL -->
+  <div id="protoModal" class="modal-backdrop">
+    <div class="proto-box">
+      <div class="proto-icon">🚧</div>
+      <h3 style="margin-bottom: 10px;" id="protoTitle">ميزة تحت التطوير</h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;" id="protoDesc">
+        هذا التطبيق عبارة عن نموذج أولي (Prototype). الميزة التي اخترتها قيد البرمجة وسوف تتوفر في الإصدار النهائي.
+      </p>
+      <button class="btn btn-primary" style="width: 100%;" onclick="closeModal('protoModal')">فهمت ذلك</button>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 دليل وصلني للمواصلات العامة - Prototype Version</p>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    // System Navigation & Prototype Triggering
+    function navigateTo(pageId) {
+      document.querySelectorAll('.section-page').forEach(page => page.classList.remove('active-page'));
+      document.getElementById('page-' + pageId).classList.add('active-page');
+
+      document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+      if(pageId === 'home') document.getElementById('nav-home').classList.add('active');
+      if(pageId === 'planner') document.getElementById('nav-planner').classList.add('active');
+    }
+
+    function triggerPrototypeNotice(featureName) {
+      document.getElementById('protoTitle').innerText = `خاصية: ${featureName}`;
+      document.getElementById('protoDesc').innerText = `الميزة (${featureName}) تعتمد على قاعدة بيانات الحساسات والتتبع المباشر وهي حالياً نموذج عرض (Prototype) ضمن واجهة البرنامج.`;
+      document.getElementById('protoModal').style.display = 'flex';
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+
+    // --- Cairo Metro Graph Database ---
+    const METRO_STATIONS = [
+      { name: "حلوان", line: 1, lat: 29.8414, lon: 31.3008, order: 1, term1: "حلوان", term2: "المرج الجديدة" },
+      { name: "السادات", line: 1, isTransfer: true, lines: [1, 2], lat: 30.0444, lon: 31.2357, order: 18, term1: "حلوان", term2: "المرج الجديدة" },
+      { name: "ناصر", line: 1, isTransfer: true, lines: [1, 3], lat: 30.0532, lon: 31.2392, order: 19, term1: "حلوان", term2: "المرج الجديدة" },
+      { name: "الشهداء", line: 1, isTransfer: true, lines: [1, 2], lat: 30.0614, lon: 31.2464, order: 20, term1: "حلوان", term2: "المرج الجديدة" },
+      { name: "المرج الجديدة", line: 1, lat: 30.1636, lon: 31.3382, order: 35, term1: "حلوان", term2: "المرج الجديدة" },
+      { name: "المنيب", line: 2, lat: 29.9811, lon: 31.2123, order: 1, term1: "المنيب", term2: "شبرا الخيمة" },
+      { name: "العتبة", line: 2, isTransfer: true, lines: [2, 3], lat: 30.0526, lon: 31.2472, order: 11, term1: "المنيب", term2: "شبرا الخيمة" },
+      { name: "شبرا الخيمة", line: 2, lat: 30.1225, lon: 31.2442, order: 20, term1: "المنيب", term2: "شبرا الخيمة" },
+      { name: "عدلي منصور", line: 3, lat: 30.1472, lon: 31.4211, order: 1, term1: "عدلي منصور", term2: "الكيت كات" },
+      { name: "عباس العقاد", line: 3, lat: 30.0652, lon: 31.3321, order: 14, term1: "عدلي منصور", term2: "الكيت كات" }
+    ];
+
+    let userCoords = [30.0444, 31.2357];
+    let destCoords = null;
+    let destName = "";
+    let map = null, mapMarkers = [], mapPolyline = null, searchDebounce = null;
+
+    function searchLocation(query) {
+      clearTimeout(searchDebounce);
+      const box = document.getElementById('suggestions');
+      if (!query.trim() || query.length < 3) { box.style.display = 'none'; return; }
+
+      searchDebounce = setTimeout(() => {
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=eg&limit=5&accept-language=ar`)
+          .then(res => res.json())
+          .then(data => {
+            box.innerHTML = '';
+            if (!data.length) { box.style.display = 'none'; return; }
+            data.forEach(item => {
+              const div = document.createElement('div');
+              div.className = 'sug-item';
+              div.innerText = item.display_name;
+              div.onclick = () => {
+                document.getElementById('destInput').value = item.display_name.split(',')[0];
+                destCoords = [parseFloat(item.lat), parseFloat(item.lon)];
+                destName = item.display_name.split(',')[0];
+                box.style.display = 'none';
+              };
+              box.appendChild(div);
+            });
+            box.style.display = 'block';
+          });
+      }, 300);
+    }
+
+    function findNearestMetro(coords) {
+      let nearest = null, minDist = Infinity;
+      METRO_STATIONS.forEach(st => {
+        let d = getDistanceKm(coords[0], coords[1], st.lat, st.lon);
+        if (d < minDist) { minDist = d; nearest = st; }
+      });
+      return { station: nearest, distance: minDist };
+    }
+
+    function getDistanceKm(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+      return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+    }
+
+    function planTrip() {
+      const val = document.getElementById('destInput').value.trim();
+      if (!val) { alert("يرجى إدخال وجهة الوصول أولاً!"); return; }
+
+      if (!destCoords) {
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&countrycodes=eg&limit=1`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.length) {
+              destCoords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+              destName = data[0].display_name.split(',')[0];
+              generateDetailedSteps();
+            }
+          });
+      } else {
+        generateDetailedSteps();
+      }
+    }
+
+    function generateDetailedSteps() {
+      const startMetro = findNearestMetro(userCoords);
+      const endMetro = findNearestMetro(destCoords);
+      const timeline = document.getElementById('timelineSteps');
+      timeline.innerHTML = '';
+
+      let steps = [];
+      let totalCost = 0, totalTime = 0;
+
+      if (startMetro.distance < 0.8) {
+        steps.push({ badge: "مشي", class: "bg-walk", title: "مشي للمترو", desc: `امشِ نحو <b>محطة مترو ${startMetro.station.name}</b>.` });
+        totalTime += 10;
+      } else {
+        steps.push({ badge: "سرفيس / ميكروباص", class: "bg-microbus", title: "مواصفات الميكروباص الأول", desc: `اركب ميكروباص للوصول لمترو <b>${startMetro.station.name}</b>. (الأجرة: ~6 ج.م)` });
+        totalCost += 6; totalTime += 15;
+      }
+
+      const s1 = startMetro.station;
+      const s2 = endMetro.station;
+
+      steps.push({ badge: `مترو - الخط ${s1.line}`, class: "bg-metro", title: `اركب من [${s1.name}]`, desc: `ركوب المترو اتجاه <b>[رصيف ${s1.term2}]</b> واخرج عند محطة <b>${s2.name}</b>.` });
+      totalCost += 8; totalTime += 20;
+
+      steps.push({ badge: "وصول نهائي", class: "bg-walk", title: "الوصول للوجهة", desc: `اخرج للشارع وامشِ بضع دقائق للوصول إلى <b>${destName}</b>.` });
+
+      document.getElementById('totalCost').innerText = `~${totalCost} ج.م`;
+      document.getElementById('totalTime').innerText = `~${totalTime} دقيقة`;
+
+      steps.forEach(st => {
+        const div = document.createElement('div');
+        div.className = 'step-card';
+        div.innerHTML = `<span class="step-badge ${st.class}">${st.badge}</span> <b style="margin-right: 6px;">${st.title}</b><p style="margin-top: 6px; color: var(--text-muted);">${st.desc}</p>`;
+        timeline.appendChild(div);
+      });
+
+      document.getElementById('tripModal').style.display = 'flex';
+      renderMap(s1, s2);
+    }
+
+    function renderMap(s1, s2) {
+      if (!map) {
+        map = L.map('map');
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+      }
+      setTimeout(() => {
+        map.invalidateSize();
+        mapMarkers.forEach(m => map.removeLayer(m));
+        if (mapPolyline) map.removeLayer(mapPolyline);
+        mapMarkers = [];
+
+        const p1 = L.marker(userCoords).addTo(map);
+        const p2 = L.marker([s1.lat, s1.lon]).addTo(map);
+        const p3 = L.marker(destCoords).addTo(map);
+        mapMarkers.push(p1, p2, p3);
+
+        const coords = [userCoords, [s1.lat, s1.lon], destCoords];
+        mapPolyline = L.polyline(coords, { color: '#2563eb', weight: 5 }).addTo(map);
+        map.fitBounds(mapPolyline.getBounds(), { padding: [30, 30] });
+      }, 200);
+    }
+  </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>وصلني | دليل المواصلات العامة الذكي</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <style>
+    :root {
+      --primary: #2563eb;       /* أزرق النقل والتوجيه */
+      --primary-dark: #1d4ed8;
+      --accent-bus: #f59e0b;     /* برتقالي السرفيس والميكروباص */
+      --accent-metro: #ef4444;   /* أحمر خطوط المترو */
+      --bg-main: #0f172a;        /* خلفية داكنة فخمة */
+      --bg-card: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* --- Navigation Bar --- */
+    .navbar {
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-main);
+      font-weight: 800;
+      font-size: 1.4rem;
+    }
+
+    .brand-icon {
+      background: linear-gradient(135deg, var(--primary), var(--accent-bus));
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-link a {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+      padding: 8px 4px;
+    }
+
+    .nav-link a:hover,
+    .nav-link.active a {
+      color: var(--text-main);
+      border-bottom: 2px solid var(--primary);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary {
+      background: var(--border);
+      color: var(--text-main);
+    }
+
+    .btn-secondary:hover {
+      background: #475569;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+    }
+
+    /* --- Page Visibility --- */
+    .section-page {
+      display: none;
+    }
+
+    .section-page.active-page {
+      display: block;
+    }
+
+    /* --- Landing Hero Section --- */
+    .hero-section {
+      padding: 80px 20px 60px;
+      text-align: center;
+      background: radial-gradient(circle at top, rgba(37, 99, 235, 0.15), transparent 70%);
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      background: rgba(37, 99, 235, 0.2);
+      border: 1px solid var(--primary);
+      border-radius: 20px;
+      color: #60a5fa;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .hero-title {
+      font-size: 2.8rem;
+      font-weight: 900;
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+
+    .hero-title span.highlight-bus { color: var(--accent-bus); }
+    .hero-title span.highlight-metro { color: var(--accent-metro); }
+
+    .hero-subtitle {
+      max-width: 700px;
+      margin: 0 auto 36px;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
+    /* --- Features Grid --- */
+    .features-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .section-title h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.3);
+    }
+
+    .feature-icon-wrapper {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 18px;
+    }
+
+    .icon-bus { background: rgba(245, 158, 11, 0.2); color: var(--accent-bus); }
+    .icon-metro { background: rgba(239, 68, 68, 0.2); color: var(--accent-metro); }
+    .icon-route { background: rgba(37, 99, 235, 0.2); color: var(--primary); }
+
+    .feature-card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+
+    .feature-card p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    /* --- Route Planner Section --- */
+    .planner-container {
+      min-height: calc(100vh - 150px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .planner-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      width: 100%;
+      max-width: 540px;
+      padding: 32px;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+      position: relative;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-muted);
+    }
+
+    .input-control {
+      width: 100%;
+      padding: 14px 16px;
+      background: #0f172a;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .input-control:focus {
+      border-color: var(--primary);
+    }
+
+    .suggestions-list {
+      position: absolute;
+      top: 100%; right: 0; left: 0;
+      background: #1e293b;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      max-height: 180px;
+      overflow-y: auto;
+      z-index: 100;
+      display: none;
+      margin-top: 6px;
+    }
+
+    .sug-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sug-item:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    /* --- Modals & Popups --- */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      padding: 15px;
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 900px;
+      height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      background: #0f172a;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .close-btn {
+      background: var(--border);
+      border: none;
+      color: var(--text-main);
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .modal-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    #map { flex: 1; height: 100%; }
+
+    .details-pane {
+      width: 400px;
+      background: #0f172a;
+      border-left: 1px solid var(--border);
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .summary-box {
+      background: var(--bg-card);
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+    }
+
+    .summary-val { font-size: 1.2rem; font-weight: 800; color: var(--accent-bus); }
+    .summary-lbl { font-size: 0.75rem; color: var(--text-muted); }
+
+    .step-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .step-badge {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .bg-microbus { background: var(--accent-bus); }
+    .bg-metro { background: var(--accent-metro); }
+    .bg-transfer { background: #8b5cf6; }
+    .bg-walk { background: #64748b; }
+
+    /* Prototype Notification Modal */
+    .proto-box {
+      background: var(--bg-card);
+      border: 1px solid var(--primary);
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 420px;
+      text-align: center;
+    }
+
+    .proto-icon { font-size: 3rem; margin-bottom: 15px; }
+
+    /* Footer */
+    footer {
+      background: #0b1120;
+      border-top: 1px solid var(--border);
+      padding: 24px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: auto;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hero-title { font-size: 2rem; }
+      .modal-body { flex-direction: column-reverse; }
+      .details-pane { width: 100%; height: 55%; border-left: none; border-top: 1px solid var(--border); }
+      #map { height: 45%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header / Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="#" class="brand-logo" onclick="navigateTo('home'); return false;">
+        <div class="brand-icon">🚌</div>
+        <span>وصلني</span>
+      </a>
+
+      <ul class="nav-links">
+        <li class="nav-link active" id="nav-home"><a href="#" onclick="navigateTo('home'); return false;">الرئيسية</a></li>
+        <li class="nav-link" id="nav-planner"><a href="#" onclick="navigateTo('planner'); return false;">التوجيه والتخطيط</a></li>
+        <li class="nav-link"><a href="#" onclick="triggerPrototypeNotice('خريطة المترو التفاعلية')">خريطة المترو</a></li>
+        <li class="nav-link"><a href="#" onclick="triggerPrototypeNotice('حاسبة التعرفة والأسعار')">أسعار التذاكر</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <button class="btn btn-secondary" onclick="triggerPrototypeNotice('تسجيل الحساب')">تسجيل الدخول</button>
+        <button class="btn btn-primary" onclick="navigateTo('planner')">خطط رحلتك</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HOME PAGE -->
+  <div id="page-home" class="section-page active-page">
+    <section class="hero-section">
+      <span class="hero-badge">⚡ النسخة التجريبية (Prototype)</span>
+      <h1 class="hero-title">
+        دليلك الشامل لركوب <span class="highlight-bus">الميكروباص</span> و <span class="highlight-metro">المترو</span>
+      </h1>
+      <p class="hero-subtitle">
+        نظام توجيه مصري ذكي يربط بين المواصلات الداخلية، الميكروباص، السرفيس، وخطوط المترو محددًا لك اسم المحطة والرصيف والتكلفة.
+      </p>
+      <div style="display: flex; gap: 15px; justify-content: center;">
+        <button class="btn btn-primary" style="padding: 14px 28px; font-size: 1rem;" onclick="navigateTo('planner')">ابدأ تحديد مسارك الآن</button>
+        <button class="btn btn-secondary" style="padding: 14px 28px; font-size: 1rem;" onclick="triggerPrototypeNotice('عرض شبكة المواصلات')">عرض الشبكة الكاملة</button>
+      </div>
+    </section>
+
+    <!-- PROTOTYPE FEATURES GRID -->
+    <section class="features-section">
+      <div class="section-title">
+        <h2>مميزات النظام الذكي</h2>
+        <p style="color: var(--text-muted);">اضغط على أي ميزة لمعاينة وظائف النظام المستقبلي</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card" onclick="triggerPrototypeNotice('متابعة الميكروباص اللحظية (Live Bus Tracking)')">
+          <div class="feature-icon-wrapper icon-bus">🚐</div>
+          <h3>تتبع الميكروباصات</h3>
+          <p>معرفة أماكن تواجد مواقف السرفيس والميكروباصات وقيمة الأجرة الرسمية لكل خط.</p>
+        </div>
+
+        <div class="feature-card" onclick="triggerPrototypeNotice('توجيه رصيف المترو والتبديل')">
+          <div class="feature-icon-wrapper icon-metro">🚇</div>
+          <h3>توجيه رصيف المترو</h3>
+          <p>تحديد اسم محطة التبديل (السادات/الشهداء/ناصر) واسم الاتجاه المكتوب على رصيف القطار.</p>
+        </div>
+
+        <div class="feature-card" onclick="triggerPrototypeNotice('حساب التكلفة الإجمالية')">
+          <div class="feature-icon-wrapper icon-route">💰</div>
+          <h3>حاسبة التكلفة والوقت</h3>
+          <p>تقدير مالي دقيق لمجموع مصاريف الرحلة (ميكروباص + تذكرة المترو) مع زمن الوصول.</p>
+        </div>
+
+        <div class="feature-card" onclick="triggerPrototypeNotice('تنبيهات الازدحام المروري')">
+          <div class="feature-icon-wrapper icon-bus">⚠️</div>
+          <h3>تنبيهات الازدحام</h3>
+          <p>إشعارات بمحاور المحطات المزدحمة اقتراح مسارات موازية أسرع وقت الذروة.</p>
+        </div>
+
+        <div class="feature-card" onclick="triggerPrototypeNotice('الملاحة بدون إنترنت (Offline Mode)')">
+          <div class="feature-icon-wrapper icon-route">📡</div>
+          <h3>العمل بدون إنترنت</h3>
+          <p>إمكانية حفظ مسارات المترو والمواقف وتصفح دليل الخطوات دون الحاجة لاتصال بالشبكة.</p>
+        </div>
+
+        <div class="feature-card" onclick="triggerPrototypeNotice('دليل محطات المنوريل والقطار الكهربائي')">
+          <div class="feature-icon-wrapper icon-metro">🚝</div>
+          <h3>شبكة المنوريل والـ LRT</h3>
+          <p>ربط مسارات المترو والميكروباص بخطوط المنوريل الجديدة والقطار الكهربائي الخفيف.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- PLANNER PAGE -->
+  <div id="page-planner" class="section-page">
+    <div class="planner-container">
+      <div class="planner-card">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h2 style="font-size: 1.5rem; margin-bottom: 6px;">خطط رحلتك بالتفصيل</h2>
+          <p style="color: var(--text-muted); font-size: 0.88rem;">حدد المكان وسيقوم المحرك برسم مسار المواصلات والمترو</p>
+        </div>
+
+        <div class="form-group">
+          <label>نقطة الانطلاق</label>
+          <input type="text" id="startInput" class="input-control" value="موقعي الحالي (GPS)" readonly>
+        </div>
+
+        <div class="form-group">
+          <label>مكان الوصول (الوجهة)</label>
+          <input type="text" id="destInput" class="input-control" placeholder="أدخل اسم المنطقة أو الشارع (مثل: عباس العقاد، التحرير...)" oninput="searchLocation(this.value)">
+          <div id="suggestions" class="suggestions-list"></div>
+        </div>
+
+        <button class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 1rem; margin-top: 10px;" onclick="planTrip()">عرض دليل ركوب المواصلات</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRIP DETAILS MODAL -->
+  <div id="tripModal" class="modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">تفاصيل مسار الرحلة</h3>
+        <button class="close-btn" onclick="closeModal('tripModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="map"></div>
+        <div class="details-pane">
+          <div class="summary-box">
+            <div>
+              <div class="summary-val" id="totalCost">0 ج.م</div>
+              <div class="summary-lbl">التكلفة المتوقعة</div>
+            </div>
+            <div>
+              <div class="summary-val" id="totalTime">0 دقيقة</div>
+              <div class="summary-lbl">الوقت التقديري</div>
+            </div>
+          </div>
+          <h4 style="font-size: 0.9rem; color: var(--text-muted);">خطوات ركوب المواصلات:</h4>
+          <div id="timelineSteps" style="display: flex; flex-direction: column; gap: 12px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROTOTYPE NOTICE MODAL -->
+  <div id="protoModal" class="modal-backdrop">
+    <div class="proto-box">
+      <div class="proto-icon">🚧</div>
+      <h3 style="margin-bottom: 10px;" id="protoTitle">ميزة تحت التطوير</h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;" id="protoDesc">
+        هذا التطبيق عبارة عن نموذج أولي (Prototype). الميزة التي اخترتها قيد البرمجة وسوف تتوفر في الإصدار النهائي.
+      </p>
+      <button class="btn btn-primary" style="width: 100%;" onclick="closeModal('protoModal')">فهمت ذلك</button>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 دليل وصلني للمواصلات العامة - Prototype Version</p>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    // System Navigation & Prototype Triggering
+    function navigateTo(pageId) {
+      document.querySelectorAll('.section-page').forEach(page => page.classList.remove('active-page'));
+      document.getElementById('page-' + pageId).classList.add('active-page');
+
+      document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+      if(pageId === 'home') document.getElementById('nav-home').classList.add('active');
+      if(pageId === 'planner') document.getElementById('nav-planner').classList.add('active');
+    }
+
+    function triggerPrototypeNotice(featureName) {
+      document.getElementById('protoTitle').innerText = `خاصية: ${featureName}`;
+      document.getElementById('protoDesc').innerText = `الميزة (${featureName}) تعتمد على قاعدة بيانات الحساسات والتتبع المباشر وهي حالياً نموذج عرض (Prototype) ضمن واجهة البرنامج.`;
+      document.getElementById('protoModal').style.display = 'flex';
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+
+    // --- Cairo Metro Graph Database ---
+    const METRO_STATIONS = [
+      { name: "حلوان", line: 1, lat: 29.8414, lon: 31.3008, order: 1, term1: "حلوان", term2: "المرج الجديدة" },
+      { name: "السادات", line: 1, isTransfer: true, lines: [1, 2], lat: 30.0444, lon: 31.2357, order: 18, term1: "حلوان", term2: "المرج الجديدة" },
+      { name: "ناصر", line: 1, isTransfer: true, lines: [1, 3], lat: 30.0532, lon: 31.2392, order: 19, term1: "حلوان", term2: "المرج الجديدة" },
+      { name: "الشهداء", line: 1, isTransfer: true, lines: [1, 2], lat: 30.0614, lon: 31.2464, order: 20, term1: "حلوان", term2: "المرج الجديدة" },
+      { name: "المرج الجديدة", line: 1, lat: 30.1636, lon: 31.3382, order: 35, term1: "حلوان", term2: "المرج الجديدة" },
+      { name: "المنيب", line: 2, lat: 29.9811, lon: 31.2123, order: 1, term1: "المنيب", term2: "شبرا الخيمة" },
+      { name: "العتبة", line: 2, isTransfer: true, lines: [2, 3], lat: 30.0526, lon: 31.2472, order: 11, term1: "المنيب", term2: "شبرا الخيمة" },
+      { name: "شبرا الخيمة", line: 2, lat: 30.1225, lon: 31.2442, order: 20, term1: "المنيب", term2: "شبرا الخيمة" },
+      { name: "عدلي منصور", line: 3, lat: 30.1472, lon: 31.4211, order: 1, term1: "عدلي منصور", term2: "الكيت كات" },
+      { name: "عباس العقاد", line: 3, lat: 30.0652, lon: 31.3321, order: 14, term1: "عدلي منصور", term2: "الكيت كات" }
+    ];
+
+    let userCoords = [30.0444, 31.2357];
+    let destCoords = null;
+    let destName = "";
+    let map = null, mapMarkers = [], mapPolyline = null, searchDebounce = null;
+
+    function searchLocation(query) {
+      clearTimeout(searchDebounce);
+      const box = document.getElementById('suggestions');
+      if (!query.trim() || query.length < 3) { box.style.display = 'none'; return; }
+
+      searchDebounce = setTimeout(() => {
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=eg&limit=5&accept-language=ar`)
+          .then(res => res.json())
+          .then(data => {
+            box.innerHTML = '';
+            if (!data.length) { box.style.display = 'none'; return; }
+            data.forEach(item => {
+              const div = document.createElement('div');
+              div.className = 'sug-item';
+              div.innerText = item.display_name;
+              div.onclick = () => {
+                document.getElementById('destInput').value = item.display_name.split(',')[0];
+                destCoords = [parseFloat(item.lat), parseFloat(item.lon)];
+                destName = item.display_name.split(',')[0];
+                box.style.display = 'none';
+              };
+              box.appendChild(div);
+            });
+            box.style.display = 'block';
+          });
+      }, 300);
+    }
+
+    function findNearestMetro(coords) {
+      let nearest = null, minDist = Infinity;
+      METRO_STATIONS.forEach(st => {
+        let d = getDistanceKm(coords[0], coords[1], st.lat, st.lon);
+        if (d < minDist) { minDist = d; nearest = st; }
+      });
+      return { station: nearest, distance: minDist };
+    }
+
+    function getDistanceKm(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+      return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+    }
+
+    function planTrip() {
+      const val = document.getElementById('destInput').value.trim();
+      if (!val) { alert("يرجى إدخال وجهة الوصول أولاً!"); return; }
+
+      if (!destCoords) {
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&countrycodes=eg&limit=1`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.length) {
+              destCoords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+              destName = data[0].display_name.split(',')[0];
+              generateDetailedSteps();
+            }
+          });
+      } else {
+        generateDetailedSteps();
+      }
+    }
+
+    function generateDetailedSteps() {
+      const startMetro = findNearestMetro(userCoords);
+      const endMetro = findNearestMetro(destCoords);
+      const timeline = document.getElementById('timelineSteps');
+      timeline.innerHTML = '';
+
+      let steps = [];
+      let totalCost = 0, totalTime = 0;
+
+      if (startMetro.distance < 0.8) {
+        steps.push({ badge: "مشي", class: "bg-walk", title: "مشي للمترو", desc: `امشِ نحو <b>محطة مترو ${startMetro.station.name}</b>.` });
+        totalTime += 10;
+      } else {
+        steps.push({ badge: "سرفيس / ميكروباص", class: "bg-microbus", title: "مواصفات الميكروباص الأول", desc: `اركب ميكروباص للوصول لمترو <b>${startMetro.station.name}</b>. (الأجرة: ~6 ج.م)` });
+        totalCost += 6; totalTime += 15;
+      }
+
+      const s1 = startMetro.station;
+      const s2 = endMetro.station;
+
+      steps.push({ badge: `مترو - الخط ${s1.line}`, class: "bg-metro", title: `اركب من [${s1.name}]`, desc: `ركوب المترو اتجاه <b>[رصيف ${s1.term2}]</b> واخرج عند محطة <b>${s2.name}</b>.` });
+      totalCost += 8; totalTime += 20;
+
+      steps.push({ badge: "وصول نهائي", class: "bg-walk", title: "الوصول للوجهة", desc: `اخرج للشارع وامشِ بضع دقائق للوصول إلى <b>${destName}</b>.` });
+
+      document.getElementById('totalCost').innerText = `~${totalCost} ج.م`;
+      document.getElementById('totalTime').innerText = `~${totalTime} دقيقة`;
+
+      steps.forEach(st => {
+        const div = document.createElement('div');
+        div.className = 'step-card';
+        div.innerHTML = `<span class="step-badge ${st.class}">${st.badge}</span> <b style="margin-right: 6px;">${st.title}</b><p style="margin-top: 6px; color: var(--text-muted);">${st.desc}</p>`;
+        timeline.appendChild(div);
+      });
+
+      document.getElementById('tripModal').style.display = 'flex';
+      renderMap(s1, s2);
+    }
+
+    function renderMap(s1, s2) {
+      if (!map) {
+        map = L.map('map');
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+      }
+      setTimeout(() => {
+        map.invalidateSize();
+        mapMarkers.forEach(m => map.removeLayer(m));
+        if (mapPolyline) map.removeLayer(mapPolyline);
+        mapMarkers = [];
+
+        const p1 = L.marker(userCoords).addTo(map);
+        const p2 = L.marker([s1.lat, s1.lon]).addTo(map);
+        const p3 = L.marker(destCoords).addTo(map);
+        mapMarkers.push(p1, p2, p3);
+
+        const coords = [userCoords, [s1.lat, s1.lon], destCoords];
+        mapPolyline = L.polyline(coords, { color: '#2563eb', weight: 5 }).addTo(map);
+        map.fitBounds(mapPolyline.getBounds(), { padding: [30, 30] });
+      }, 200);
     }
   </script>
 </body>
