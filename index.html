@@ -1,1 +1,231 @@
-rrdgreerrerere
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>دليل المواصلات - Prototype</title>
+  
+  <!-- Leaflet CSS الخريطة -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    /* توزيع الشاشة الافتراضي للكمبيوتر (Desktop Layout) */
+    body {
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+      background-color: #f5f5f5;
+    }
+
+    /* القائمة الجانبية */
+    .sidebar {
+      width: 380px;
+      padding: 20px;
+      background: #ffffff;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      z-index: 1000;
+      overflow-y: auto;
+    }
+
+    h2 {
+      color: #2c3e50;
+      font-size: 1.4rem;
+      margin-bottom: 5px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 0.9rem;
+      color: #555;
+      font-weight: bold;
+    }
+
+    input, select, button {
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      width: 100%;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    /* كروت نتائج المسار */
+    .results-card {
+      margin-top: 10px;
+      padding: 15px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background-color: #fafafa;
+      display: none; /* مخفي لحين الضغط على البحث */
+    }
+
+    .summary-info {
+      display: flex;
+      justify-content: space-between;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+      font-weight: bold;
+      color: #27ae60;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+    }
+
+    .badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      color: white;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+
+    .bg-walk { background-color: #7f8c8d; }
+    .bg-bus { background-color: #e67e22; }
+    .bg-metro { background-color: #c0392b; }
+
+    /* منطقة الخريطة */
+    #map {
+      flex: 1;
+      height: 100%;
+      width: 100%;
+    }
+
+    /* ------------------------------------------------ */
+    /* استجابة التصميم لشاشات الموبايل (Responsive CSS) */
+    /* ------------------------------------------------ */
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column-reverse; /* يجعل الخريطة فوق والقائمة تحت أو العكس حسب الرغبة */
+      }
+
+      .sidebar {
+        width: 100%;
+        max-height: 50vh; /* القائمة تأخذ نصف الشاشة كحد أقصى على الموبايل */
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.15);
+        border-radius: 16px 16px 0 0;
+      }
+
+      #map {
+        height: 50vh; /* الخريطة تأخذ النصف الآخر */
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- القائمة الجانبية / السفلى في الموبايل -->
+  <div class="sidebar">
+    <h2>تخطيط الرحلة</h2>
+    
+    <div class="input-group">
+      <label>موقعك الحالي:</label>
+      <input type="text" id="startLocation" value="موقعي الحالي (مكتشف)" readonly>
+    </div>
+
+    <div class="input-group">
+      <label>إلى أين تريد الذهاب؟</label>
+      <select id="destination">
+        <option value="tahrir">ميدان التحرير</option>
+        <option value="cairo_univ">جامعة القاهرة</option>
+      </select>
+    </div>
+
+    <button onclick="findRoute()">عرض أسهل مواصلة</button>
+
+    <!-- منطقة عرض التفاصيل بعد الضغط على زر البحث -->
+    <div id="results" class="results-card">
+      <div class="summary-info">
+        <span>الوقت: ~25 دقيقة</span>
+        <span>التكلفة: 12 جنيه</span>
+      </div>
+
+      <div class="step-item">
+        <span class="badge bg-walk">مشي</span>
+        <span>سِر لمدة 3 دقائق إلى المحطة</span>
+      </div>
+
+      <div class="step-item">
+        <span class="badge bg-metro">المترو</span>
+        <span>اركب الخط الأول واقصد محطة السادات</span>
+      </div>
+
+      <div class="step-item">
+        <span class="badge bg-bus">أتوبيس</span>
+        <span>اركب أتوبيس رقم 102 حتى وجهتك</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- الخريطة -->
+  <div id="map"></div>
+
+  <!-- Leaflet JS الخريطة -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <script>
+    // 1. تهيئة الخريطة
+    const map = L.map('map').setView([30.0444, 31.2357], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // 2. تحديد موقع المستخدم الحالي
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(position => {
+        const userLat = position.coords.latitude;
+        const userLng = position.coords.longitude;
+
+        map.setView([userLat, userLng], 14);
+
+        L.marker([userLat, userLng])
+          .addTo(map)
+          .bindPopup("أنت هنا")
+          .openPopup();
+      });
+    }
+
+    // 3. دالة محاكاة عرض النتائج مع إعادة ضبط أبعاد الخريطة
+    function findRoute() {
+      document.getElementById('results').style.display = 'block';
+      // تحديث الخريطة للتأكد من إعادة ضبط حجمها بشكل صحيح بعد تغير مساحة القائمة
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 200);
+    }
+  </script>
+</body>
+</html>
