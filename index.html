@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تطبيق المواصلات الذكي</title>
+  <title>تطبيق المواصلات الذكي - الإصدار المطور</title>
   
   <!-- Leaflet CSS الخريطة -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -17,7 +17,7 @@
     }
 
     body {
-      background-color: #f0f2f5;
+      background: linear-gradient(135deg, #eef2f3 0%, #8e9eab 100%);
       min-height: 100vh;
       display: flex;
       justify-content: center;
@@ -25,14 +25,16 @@
       padding: 20px;
     }
 
-    /* كارت إدخال البيانات الرئيسي */
+    /* كارت إدخال البيانات الرئيسي بتصميم عصري */
     .main-card {
-      background: #ffffff;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
       width: 100%;
       max-width: 480px;
-      padding: 25px;
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+      border: 1px solid rgba(255,255,255,0.3);
     }
 
     .app-header {
@@ -41,62 +43,97 @@
     }
 
     .app-header h1 {
-      font-size: 1.5rem;
-      color: #1a202c;
-      margin-bottom: 6px;
+      font-size: 1.6rem;
+      color: #1e293b;
+      margin-bottom: 8px;
     }
 
     .app-header p {
       font-size: 0.9rem;
-      color: #718096;
+      color: #64748b;
     }
 
     .form-group {
-      margin-bottom: 18px;
+      margin-bottom: 20px;
+      position: relative;
     }
 
     .form-group label {
       display: block;
       font-size: 0.9rem;
-      font-weight: 600;
-      color: #4a5568;
+      font-weight: 700;
+      color: #334155;
       margin-bottom: 8px;
-    }
-
-    .input-wrapper {
-      position: relative;
     }
 
     .form-control {
       width: 100%;
-      padding: 12px 14px;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 10px;
+      padding: 13px 16px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 12px;
       font-size: 0.95rem;
       outline: none;
-      transition: border-color 0.2s;
+      transition: all 0.2s ease;
+      background: #ffffff;
     }
 
     .form-control:focus {
-      border-color: #3182ce;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    /* قائمة الاقتراحات للبحث الحر */
+    .suggestions-box {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      left: 0;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 100;
+      display: none;
+      margin-top: 4px;
+    }
+
+    .suggestion-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      color: #334155;
+      border-bottom: 1px solid #f1f5f9;
+      transition: background 0.15s;
+    }
+
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    .suggestion-item:hover {
+      background: #eff6ff;
+      color: #2563eb;
     }
 
     .btn-submit {
       width: 100%;
-      padding: 14px;
-      background-color: #3182ce;
+      padding: 15px;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
       color: #ffffff;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       font-size: 1rem;
       font-weight: 700;
       cursor: pointer;
-      transition: background-color 0.2s;
-      margin-top: 10px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
     }
 
     .btn-submit:hover {
-      background-color: #2b6cb0;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
     }
 
     /* النافذة المنبثقة Modal */
@@ -106,8 +143,8 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(4px);
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(6px);
       display: none;
       justify-content: center;
       align-items: center;
@@ -118,38 +155,45 @@
     .modal-content {
       background: #ffffff;
       width: 100%;
-      max-width: 900px;
+      max-width: 950px;
       height: 85vh;
-      border-radius: 16px;
+      border-radius: 20px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     }
 
     .modal-header {
-      padding: 15px 20px;
+      padding: 18px 24px;
       background: #ffffff;
-      border-bottom: 1px solid #edf2f7;
+      border-bottom: 1px solid #f1f5f9;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
     .modal-header h3 {
-      font-size: 1.2rem;
-      color: #2d3748;
+      font-size: 1.25rem;
+      color: #0f172a;
     }
 
     .close-btn {
-      background: #edf2f7;
+      background: #f1f5f9;
       border: none;
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
+      font-size: 1rem;
       font-weight: bold;
       cursor: pointer;
-      color: #4a5568;
+      color: #64748b;
+      transition: background 0.2s;
+    }
+
+    .close-btn:hover {
+      background: #e2e8f0;
+      color: #0f172a;
     }
 
     .modal-body {
@@ -160,36 +204,38 @@
 
     /* تفاصيل الرحلة داخل البوب اب */
     .route-details {
-      width: 340px;
-      padding: 20px;
+      width: 360px;
+      padding: 24px;
       background: #f8fafc;
-      border-left: 1px solid #edf2f7;
+      border-left: 1px solid #e2e8f0;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 18px;
     }
 
     .summary-box {
       background: #ffffff;
-      padding: 15px;
-      border-radius: 12px;
+      padding: 16px;
+      border-radius: 14px;
       border: 1px solid #e2e8f0;
       display: flex;
       justify-content: space-around;
       text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
 
     .summary-item .label {
       font-size: 0.75rem;
-      color: #718096;
+      color: #64748b;
       margin-bottom: 4px;
+      font-weight: 600;
     }
 
     .summary-item .value {
-      font-size: 1.1rem;
-      font-weight: bold;
-      color: #2b6cb0;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #2563eb;
     }
 
     .timeline {
@@ -202,29 +248,31 @@
       display: flex;
       gap: 12px;
       background: #ffffff;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid #edf2f7;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
 
     .badge {
-      padding: 4px 8px;
-      border-radius: 6px;
+      padding: 5px 10px;
+      border-radius: 8px;
       color: white;
       font-size: 0.75rem;
       font-weight: bold;
       height: fit-content;
+      white-space: nowrap;
     }
 
-    .bg-walk { background-color: #718096; }
-    .bg-metro { background-color: #e53e3e; }
-    .bg-bus { background-color: #dd6b20; }
-    .bg-microbus { background-color: #319795; }
+    .bg-walk { background-color: #64748b; }
+    .bg-metro { background-color: #ef4444; }
+    .bg-bus { background-color: #f97316; }
+    .bg-microbus { background-color: #0d9488; }
 
     .step-info {
-      font-size: 0.85rem;
-      color: #2d3748;
-      line-height: 1.4;
+      font-size: 0.88rem;
+      color: #334155;
+      line-height: 1.5;
     }
 
     /* منطقة الخريطة داخل البوب اب */
@@ -233,7 +281,6 @@
       height: 100%;
     }
 
-    /* التجاوب للموبايل داخل البوب اب */
     @media (max-width: 768px) {
       .modal-body {
         flex-direction: column-reverse;
@@ -242,7 +289,7 @@
         width: 100%;
         height: 50%;
         border-left: none;
-        border-top: 1px solid #edf2f7;
+        border-top: 1px solid #e2e8f0;
       }
       #modalMap {
         height: 50%;
@@ -252,60 +299,51 @@
 </head>
 <body>
 
-  <!-- الشاشة الرئيسية لإدخال البيانات -->
+  <!-- الشاشة الرئيسية -->
   <div class="main-card">
     <div class="app-header">
       <h1>دليل المواصلات الذكي</h1>
-      <p>حدد وجهتك وسنعرض لك أسهل وأرخص مسار</p>
+      <p>اكتب اسم أي مكان وسنعرض لك أفضل مسار ومواصلة</p>
     </div>
 
     <div class="form-group">
       <label>نقطة الانطلاق</label>
-      <div class="input-wrapper">
-        <input type="text" id="startInput" class="form-control" value="جاري تحديد موقعك..." readonly>
-      </div>
+      <input type="text" id="startInput" class="form-control" value="جاري تحديد موقعك..." readonly>
     </div>
 
     <div class="form-group">
-      <label>مكان الوصول</label>
-      <select id="destinationSelect" class="form-control">
-        <option value="tahrir">ميدان التحرير (وسط البلد)</option>
-        <option value="cairo_univ">جامعة القاهرة (الجيزة)</option>
-        <option value="ramses">محطة مصر (رعمسيس)</option>
-      </select>
+      <label>أين تريد الذهاب؟</label>
+      <input type="text" id="destinationInput" class="form-control" placeholder="مثال: مول العرب، عباس العقاد، محطة بنها..." oninput="searchPlaces(this.value)">
+      <div id="suggestionsBox" class="suggestions-box"></div>
     </div>
 
-    <button class="btn-submit" onclick="openRouteModal()">تأكيد اللوكيشن وعرض المسار</button>
+    <button class="btn-submit" onclick="openRouteModal()">تأكيد الموقع وعرض الخريطة</button>
   </div>
 
-  <!-- النافذة المنبثقة (Pop-up Modal) -->
+  <!-- النافذة المنبثقة Modal -->
   <div id="routeModal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>تفاصيل خريطة الرحلة</h3>
+        <h3 id="modalTitle">تفاصيل خريطة الرحلة</h3>
         <button class="close-btn" onclick="closeRouteModal()">✕</button>
       </div>
 
       <div class="modal-body">
-        <!-- الخريطة -->
         <div id="modalMap"></div>
 
-        <!-- شريط تفاصيل الخطوات والتكلفة -->
         <div class="route-details">
           <div class="summary-box">
             <div class="summary-item">
               <div class="label">التكلفة التقديرية</div>
-              <div class="value" id="totalCost">12 ج.م</div>
+              <div class="value" id="totalCost">-- ج.م</div>
             </div>
             <div class="summary-item">
               <div class="label">الوقت المتوقع</div>
-              <div class="value" id="totalTime">35 دقيقة</div>
+              <div class="value" id="totalTime">-- دقيقة</div>
             </div>
           </div>
 
-          <div class="timeline" id="timelineSteps">
-            <!-- سيتم توليد الخطوات ديناميكياً بواسطة JavaScript -->
-          </div>
+          <div class="timeline" id="timelineSteps"></div>
         </div>
       </div>
     </div>
@@ -316,47 +354,14 @@
 
   <script>
     let map = null;
-    let userCoords = [30.0444, 31.2357]; // إحداثيات افتراضية
+    let userCoords = [30.0444, 31.2357]; // القاهرة افتراضياً
+    let targetCoords = null;
+    let targetName = "";
     let routeLine = null;
     let markers = [];
+    let searchDebounce = null;
 
-    // بيانات الوجهات المحاكاة للبروتوتايب
-    const destinations = {
-      tahrir: {
-        name: "ميدان التحرير",
-        coords: [30.0444, 31.2357],
-        cost: "10 ج.م",
-        time: "25 دقيقة",
-        steps: [
-          { type: "bg-walk", badge: "مشي", text: "ترجل لمدة 4 دقائق إلى أقرب محطة مترو." },
-          { type: "bg-metro", badge: "مترو", text: "استقل المترو اتجاه المرج/حلوان وانزل في محطة السادات." },
-          { type: "bg-walk", badge: "مشي", text: "اخرج من بوابة 2 للوصول إلى الميدان مباشرة." }
-        ]
-      },
-      cairo_univ: {
-        name: "جامعة القاهرة",
-        coords: [30.0275, 31.2081],
-        cost: "15 ج.م",
-        time: "40 دقيقة",
-        steps: [
-          { type: "bg-walk", badge: "مشي", text: "ترجل لمدة 3 دقائق إلى موقف الأتوبيس." },
-          { type: "bg-bus", badge: "أتوبيس", text: "اركب أتوبيس هيئة النقل العام رقم 502." },
-          { type: "bg-microbus", badge: "ميكروباص", text: "اركب ميكروباص الجيزة وانزل أمام البوابة الرئيسية." }
-        ]
-      },
-      ramses: {
-        name: "محطة مصر (رمسيس)",
-        coords: [30.0634, 31.2468],
-        cost: "12 ج.م",
-        time: "30 دقيقة",
-        steps: [
-          { type: "bg-walk", badge: "مشي", text: "سِر لمدة 5 دقائق نحو موقف السرفيس." },
-          { type: "bg-microbus", badge: "ميكروباص", text: "اركب ميكروباص يتجه مباشرة إلى محطة رمسيس." }
-        ]
-      }
-    };
-
-    // جلب موقع المستخدم عند فتح الصفحة
+    // جلب موقع المستخدم الحالي عبر GPS
     window.onload = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -365,34 +370,147 @@
             document.getElementById('startInput').value = "تم تحديد موقعك الحالي بنجاح ✓";
           },
           () => {
-            document.getElementById('startInput').value = "الموقع الحالي (افتراضي)";
+            document.getElementById('startInput').value = "الموقع الحالي (افتراضي: القاهرة)";
           }
         );
       }
     };
 
-    // فتح النافذة المنبثقة
+    // البحث الحر عن أي مكان باستخدام Nominatim API
+    function searchPlaces(query) {
+      clearTimeout(searchDebounce);
+      const box = document.getElementById('suggestionsBox');
+
+      if (!query.trim() || query.length < 3) {
+        box.style.display = 'none';
+        return;
+      }
+
+      searchDebounce = setTimeout(() => {
+        // البحث داخل حدود مصر
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=eg&limit=5&accept-language=ar`)
+          .then(res => res.json())
+          .then(data => {
+            box.innerHTML = '';
+            if (data.length === 0) {
+              box.style.display = 'none';
+              return;
+            }
+
+            data.forEach(item => {
+              const div = document.createElement('div');
+              div.className = 'suggestion-item';
+              div.innerText = item.display_name;
+              div.onclick = () => {
+                document.getElementById('destinationInput').value = item.display_name.split(',')[0];
+                targetCoords = [parseFloat(item.lat), parseFloat(item.lon)];
+                targetName = item.display_name.split(',')[0];
+                box.style.display = 'none';
+              };
+              box.appendChild(div);
+            });
+            box.style.display = 'block';
+          })
+          .catch(() => { box.style.display = 'none'; });
+      }, 350);
+    }
+
+    // حساب المسافة بالكيلومتر بين نقطتين (Haversine Formula)
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+
+    // خوارزمية تحديد خطوات وتكلفة الرحلة ديناميكياً بناءً على المسافة
+    function generateRouteDetails(dist) {
+      let cost, time, steps = [];
+
+      if (dist < 1.5) {
+        cost = "0 ج.م";
+        time = `${Math.round(dist * 15)} دقيقة`;
+        steps = [
+          { type: "bg-walk", badge: "مشي", text: `المسافة قصيرة جداً (${dist.toFixed(1)} كم). يمكنك الترجل مباشرة إلى وجهتك.` }
+        ];
+      } else if (dist < 8) {
+        cost = "7 - 10 ج.م";
+        time = `${Math.round(dist * 4 + 10)} دقيقة`;
+        steps = [
+          { type: "bg-walk", badge: "مشي", text: "ترجل لمدة 4 دقائق لأقرب محطة أتوبيس/سرفيس." },
+          { type: "bg-microbus", badge: "ميكروباص", text: `اركب ميكروباص اتجاه (${targetName}) وانزل عند المحطة القريبة.` },
+          { type: "bg-walk", badge: "مشي", text: "سِر لمدة دقيقتين للوصول إلى الوجهة المحددة." }
+        ];
+      } else if (dist < 25) {
+        cost = "12 - 18 ج.م";
+        time = `${Math.round(dist * 2.5 + 15)} دقيقة`;
+        steps = [
+          { type: "bg-walk", badge: "مشي", text: "اذهب إلى أقرب محطة مترو أو موقف رئيسي." },
+          { type: "bg-metro", badge: "مترو", text: "استقل المترو اتجاه أسرع محطة تبادلية لخطتك." },
+          { type: "bg-bus", badge: "أتوبيس", text: `اركب أتوبيس/ميكروباص مباشر لاستكمال المسافة نحو (${targetName}).` }
+        ];
+      } else {
+        cost = "25 - 40 ج.م";
+        time = `${Math.round(dist * 2 + 20)} دقيقة`;
+        steps = [
+          { type: "bg-walk", badge: "مشي", text: "توجه إلى موقف الأقاليم أو المحطة الرئيسية." },
+          { type: "bg-microbus", badge: "ميكروباص", text: `اركب ميكروباص رحلات/سريع وسلوك الطريق الدائري نحو (${targetName}).` }
+        ];
+      }
+
+      return { cost, time, steps };
+    }
+
+    // فتح النافذة المنبثقة ورسم المسار
     function openRouteModal() {
+      const inputVal = document.getElementById('destinationInput').value.trim();
+      
+      if (!inputVal) {
+        alert("يرجى كتابة مكان الوصول أولاً!");
+        return;
+      }
+
+      // في حال لم يختر المستخدم من القائمة وكتب النص مباشرة
+      if (!targetCoords) {
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(inputVal)}&countrycodes=eg&limit=1`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.length > 0) {
+              targetCoords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+              targetName = data[0].display_name.split(',')[0];
+              renderModalData();
+            } else {
+              alert("لم نتمكن من إيجاد هذا المكان، يرجى التأكد من كتابته بشكل صحيح.");
+            }
+          });
+      } else {
+        renderModalData();
+      }
+    }
+
+    function renderModalData() {
       const modal = document.getElementById('routeModal');
       modal.style.display = 'flex';
+      document.getElementById('modalTitle').innerText = `المسار إلى: ${targetName}`;
 
-      const selectedKey = document.getElementById('destinationSelect').value;
-      const target = destinations[selectedKey];
+      const dist = calculateDistance(userCoords[0], userCoords[1], targetCoords[0], targetCoords[1]);
+      const routeData = generateRouteDetails(dist);
 
-      // تحديث النصوص والتكلفة
-      document.getElementById('totalCost').innerText = target.cost;
-      document.getElementById('totalTime').innerText = target.time;
+      document.getElementById('totalCost').innerText = routeData.cost;
+      document.getElementById('totalTime').innerText = routeData.time;
 
-      // تحديث خطوات الرحلة
       const timelineEl = document.getElementById('timelineSteps');
-      timelineEl.innerHTML = target.steps.map(step => `
+      timelineEl.innerHTML = routeData.steps.map(step => `
         <div class="timeline-step">
           <span class="badge ${step.type}">${step.badge}</span>
           <div class="step-info">${step.text}</div>
         </div>
       `).join('');
 
-      // تهيئة الخريطة إذا لم تكن مجهزة
       setTimeout(() => {
         if (!map) {
           map = L.map('modalMap');
@@ -403,28 +521,24 @@
 
         map.invalidateSize();
 
-        // مسح أي رسم سابق
         markers.forEach(m => map.removeLayer(m));
         if (routeLine) map.removeLayer(routeLine);
         markers = [];
 
-        // إضافة الماركرز
-        const userMarker = L.marker(userCoords).addTo(map).bindPopup("نقطة الانطلاق (موقعك)").openPopup();
-        const destMarker = L.marker(target.coords).addTo(map).bindPopup(target.name);
+        const userMarker = L.marker(userCoords).addTo(map).bindPopup("موقعك الحالي").openPopup();
+        const destMarker = L.marker(targetCoords).addTo(map).bindPopup(targetName);
         markers.push(userMarker, destMarker);
 
-        // رسم خط المسار بين النقطتين
-        routeLine = L.polyline([userCoords, target.coords], { color: '#3182ce', weight: 4, dashArray: '8, 8' }).addTo(map);
+        routeLine = L.polyline([userCoords, targetCoords], { color: '#2563eb', weight: 4, dashArray: '8, 8' }).addTo(map);
 
-        // ضبط رؤية الخريطة للتسِع النقطتين معاً
-        const bounds = L.latLngBounds([userCoords, target.coords]);
-        map.fitBounds(bounds, { padding: [50, 50] });
+        const bounds = L.latLngBounds([userCoords, targetCoords]);
+        map.fitBounds(bounds, { padding: [60, 60] });
       }, 200);
     }
 
-    // إغلاق النافذة المنبثقة
     function closeRouteModal() {
       document.getElementById('routeModal').style.display = 'none';
+      targetCoords = null; // إعادة ضبط للبحث القادم
     }
   </script>
 </body>
