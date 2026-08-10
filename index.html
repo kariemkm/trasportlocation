@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>دليل الملاحة والمواصلات الذكي</title>
+  <title>دليل المواصلات العامة والتوجيه الذكي</title>
   
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   
@@ -221,28 +221,34 @@
       background: #ffffff;
       padding: 12px;
       border-radius: 10px;
-      border-right: 4px solid #2563eb;
-      border-top: 1px solid #e2e8f0;
-      border-bottom: 1px solid #e2e8f0;
-      border-left: 1px solid #e2e8f0;
-      font-size: 0.85rem;
+      border: 1px solid #e2e8f0;
+      font-size: 0.88rem;
       color: #334155;
       line-height: 1.4;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
     }
 
-    .step-card .step-dist {
+    .badge {
+      padding: 4px 8px;
+      border-radius: 6px;
+      color: #fff;
       font-size: 0.75rem;
-      color: #64748b;
-      margin-top: 4px;
       font-weight: bold;
+      white-space: nowrap;
     }
+
+    .bg-walk { background-color: #64748b; }
+    .bg-metro { background-color: #dc2626; }
+    .bg-bus { background-color: #d97706; }
+    .bg-microbus { background-color: #0d9488; }
 
     #modalMap {
       flex: 1;
       height: 100%;
     }
 
-    /* مؤشر التحميل */
     .loading-overlay {
       position: absolute;
       top: 0;
@@ -270,8 +276,8 @@
 
   <div class="main-card">
     <div class="app-header">
-      <h1>دليل الملاحة والمواصلات</h1>
-      <p>حدد وجهتك للحصول على خطة السير والشوارع التفصيلية</p>
+      <h1>دليل المواصلات العامة</h1>
+      <p>اكتب اسم وجهتك لمعرفة الميكروباصات أو المترو أو الأتوبيس المناسب</p>
     </div>
 
     <div class="form-group">
@@ -281,22 +287,21 @@
 
     <div class="form-group">
       <label>أين تريد الذهاب؟</label>
-      <input type="text" id="destinationInput" class="form-control" placeholder="اكتب اسم الشارع أو المنطقة..." oninput="searchPlaces(this.value)">
+      <input type="text" id="destinationInput" class="form-control" placeholder="مثال: عباس العقاد، رمسيس، مول العرب..." oninput="searchPlaces(this.value)">
       <div id="suggestionsBox" class="suggestions-box"></div>
     </div>
 
-    <button class="btn-submit" onclick="openRouteModal()">عرض تفاصيل الطريق والخريطة</button>
+    <button class="btn-submit" onclick="openRouteModal()">خطّة المواصلات والتكلفة</button>
   </div>
 
-  <!-- Modal Popup -->
   <div id="routeModal" class="modal-overlay">
     <div class="modal-content">
       <div id="loadingOverlay" class="loading-overlay">
-        <div>جاري حساب المسار ورسم الشوارع...</div>
+        <div>جاري تحليل خطوط المواصلات والمسار...</div>
       </div>
 
       <div class="modal-header">
-        <h3 id="modalTitle">تفاصيل خطة السير</h3>
+        <h3 id="modalTitle">تفاصيل خطة المواصلات</h3>
         <button class="close-btn" onclick="closeRouteModal()">✕</button>
       </div>
 
@@ -306,8 +311,8 @@
         <div class="route-details">
           <div class="summary-box">
             <div class="summary-item">
-              <div class="label">المسافة الفعلية</div>
-              <div class="value" id="totalDist">-- كم</div>
+              <div class="label">التكلفة المتوقعة</div>
+              <div class="value" id="totalCost">-- ج.م</div>
             </div>
             <div class="summary-item">
               <div class="label">الوقت التقديري</div>
@@ -315,7 +320,7 @@
             </div>
           </div>
 
-          <h4 style="font-size: 0.9rem; color: #1e293b;">تعليمات الطريق خطوة بخطوة:</h4>
+          <h4 style="font-size: 0.9rem; color: #1e293b;">خطوات ركوب المواصلات:</h4>
           <div class="steps-list" id="stepsContainer"></div>
         </div>
       </div>
@@ -326,14 +331,13 @@
 
   <script>
     let map = null;
-    let userCoords = [30.0444, 31.2357]; // موقع افتراضي (القاهرة)
+    let userCoords = [30.0444, 31.2357]; // القاهرة
     let targetCoords = null;
     let targetName = "";
     let routeLayer = null;
     let markers = [];
     let searchDebounce = null;
 
-    // جلب موقع المستخدم الحالي
     window.onload = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -343,13 +347,11 @@
           },
           () => {
             document.getElementById('startInput').value = "موقعي الحالي (ميدان التحرير، القاهرة)";
-          },
-          { timeout: 10000 }
+          }
         );
       }
     };
 
-    // البحث الحر عن مكان الوصول
     function searchPlaces(query) {
       clearTimeout(searchDebounce);
       const box = document.getElementById('suggestionsBox');
@@ -384,7 +386,87 @@
       }, 300);
     }
 
-    // حساب المسافة المباشرة (Haversine) للحل الاحتياطي
+    async function generateTransitPlan() {
+      showLoading(true);
+
+      const url = `https://router.project-osrm.org/route/v1/driving/${userCoords[1]},${userCoords[0]};${targetCoords[1]},${targetCoords[0]}?overview=full&geometries=geojson`;
+
+      let distanceKm = 0;
+      let geometry = null;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.routes && data.routes.length > 0) {
+          distanceKm = data.routes[0].distance / 1000;
+          geometry = data.routes[0].geometry.coordinates;
+        } else {
+          throw new Error("Route calculation fallback");
+        }
+      } catch (e) {
+        distanceKm = calculateDirectDistance(userCoords[0], userCoords[1], targetCoords[0], targetCoords[1]);
+        geometry = [[userCoords[1], userCoords[0]], [targetCoords[1], targetCoords[0]]];
+      }
+
+      showLoading(false);
+      buildTransitSteps(distanceKm);
+      drawRouteOnMap(geometry);
+    }
+
+    function buildTransitSteps(dist) {
+      const stepsContainer = document.getElementById('stepsContainer');
+      stepsContainer.innerHTML = '';
+
+      let cost = "";
+      let time = "";
+      let steps = [];
+
+      if (dist < 1.5) {
+        cost = "0 ج.م";
+        time = `${Math.round(dist * 15)} دقيقة`;
+        steps = [
+          { badge: "مشي", class: "bg-walk", text: `المسافة قريبة جداً (${dist.toFixed(1)} كم)، يمكنك المشي مباشرة إلى ${targetName}.` }
+        ];
+      } else if (dist < 7) {
+        cost = "7 - 10 ج.م";
+        time = `${Math.round(dist * 3 + 10)} دقيقة`;
+        steps = [
+          { badge: "مشي", class: "bg-walk", text: "تمشَّ لأقرب محطة سيرفيس/ميكروباص من موقعك." },
+          { badge: "ميكروباص", class: "bg-microbus", text: `اركب ميكروباص متجه نحو (${targetName}) أو أقرب محور رئيسي مجاور لها.` },
+          { badge: "مشي", class: "bg-walk", text: `انزل عند أقرب نقطة وسِر نحو دقيقتين للوصول إلى ${targetName}.` }
+        ];
+      } else if (dist < 20) {
+        cost = "12 - 18 ج.م";
+        time = `${Math.round(dist * 2.2 + 15)} دقيقة`;
+        steps = [
+          { badge: "مشي", class: "bg-walk", text: "توجه إلى أقرب محطة مترو من موقعك الحالي." },
+          { badge: "مترو", class: "bg-metro", text: "اركب المترو وانزل في أقرب محطة تبادلية تؤدي لمنطقتك." },
+          { badge: "أتوبيس/سرفيس", class: "bg-bus", text: `من خارج محطة المترو، اركب ميكروباص أو أتوبيس هيئة النقل العام المتجه مباشرة إلى ${targetName}.` }
+        ];
+      } else {
+        cost = "25 - 35 ج.م";
+        time = `${Math.round(dist * 1.8 + 25)} دقيقة`;
+        steps = [
+          { badge: "مشي", class: "bg-walk", text: "توجه إلى موقف الأقاليم/الموقف الرئيسي القريب منك." },
+          { badge: "ميكروباص سريع", class: "bg-microbus", text: `اركب ميكروباص (سريع/دائري) المتجه إلى منطقة ${targetName}.` },
+          { badge: "سرفيس محلي", class: "bg-bus", text: "انزل عند المحور الرئيسي واستقل سرفيس داخلي للوصول للوجهة بالضبط." }
+        ];
+      }
+
+      document.getElementById('totalCost').innerText = cost;
+      document.getElementById('totalTime').innerText = time;
+
+      steps.forEach(step => {
+        const div = document.createElement('div');
+        div.className = 'step-card';
+        div.innerHTML = `
+          <span class="badge ${step.class}">${step.badge}</span>
+          <div>${step.text}</div>
+        `;
+        stepsContainer.appendChild(div);
+      });
+    }
+
     function calculateDirectDistance(lat1, lon1, lat2, lon2) {
       const R = 6371;
       const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -393,101 +475,6 @@
                 Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
                 Math.sin(dLon/2) * Math.sin(dLon/2);
       return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-    }
-
-    // جلب المسار من السيرفر الرئيسي مع معالجة الأخطاء بالسيرفر البديل
-    async function fetchRealRoute() {
-      showLoading(true);
-      
-      // السيرفر الأساسي (OSRM Demo Server)
-      const primaryUrl = `https://router.project-osrm.org/route/v1/driving/${userCoords[1]},${userCoords[0]};${targetCoords[1]},${targetCoords[0]}?overview=full&geometries=geojson&steps=true`;
-
-      try {
-        const response = await fetch(primaryUrl, { method: 'GET' });
-        if (!response.ok) throw new Error("Primary API Failed");
-        const data = await response.json();
-
-        if (data.routes && data.routes.length > 0) {
-          processRouteSuccess(data.routes[0]);
-          return;
-        } else {
-          throw new Error("No route found");
-        }
-      } catch (err) {
-        console.warn("فشل السيرفر الأول، جاري التبديل للمحرك البديل...", err);
-        fallbackRoute(); // الانتقال للحل الاحتياطي التلقائي
-      } finally {
-        showLoading(false);
-      }
-    }
-
-    // معالجة البيانات وإظهارها عند نجاح جلب المسار
-    function processRouteSuccess(route) {
-      const distanceKm = (route.distance / 1000).toFixed(1);
-      const durationMin = Math.round(route.duration / 60);
-
-      document.getElementById('totalDist').innerText = `${distanceKm} كم`;
-      document.getElementById('totalTime').innerText = `${durationMin} دقيقة`;
-
-      const stepsContainer = document.getElementById('stepsContainer');
-      stepsContainer.innerHTML = '';
-
-      if (route.legs && route.legs[0].steps && route.legs[0].steps.length > 0) {
-        route.legs[0].steps.forEach((step, index) => {
-          const text = translateInstruction(step);
-          const dist = step.distance > 0 ? `(المسافة: ${Math.round(step.distance)} متر)` : '';
-
-          const stepCard = document.createElement('div');
-          stepCard.className = 'step-card';
-          stepCard.innerHTML = `
-            <div><strong>الخطوة ${index + 1}:</strong> ${text}</div>
-            <div class="step-dist">${dist}</div>
-          `;
-          stepsContainer.appendChild(stepCard);
-        });
-      }
-
-      drawRouteOnMap(route.geometry.coordinates);
-    }
-
-    // خطة احترازية للرسم والتوجيه في حال انقطاع خادم الملاحة الرئيسي
-    function fallbackRoute() {
-      const dist = calculateDirectDistance(userCoords[0], userCoords[1], targetCoords[0], targetCoords[1]);
-      const estTime = Math.round(dist * 2.5 + 5);
-
-      document.getElementById('totalDist').innerText = `${dist.toFixed(1)} كم`;
-      document.getElementById('totalTime').innerText = `${estTime} دقيقة`;
-
-      const stepsContainer = document.getElementById('stepsContainer');
-      stepsContainer.innerHTML = `
-        <div class="step-card">
-          <div><strong>خطوة 1:</strong> التوجه من موقعك باتجاه (${targetName}).</div>
-        </div>
-        <div class="step-card">
-          <div><strong>خطوة 2:</strong> استقل الميكروباص/الأتوبيس المتجه مباشرة إلى المنطقة.</div>
-        </div>
-        <div class="step-card">
-          <div><strong>خطوة 3:</strong> النزول عند نقطة الوصول.</div>
-        </div>
-      `;
-
-      // رسم خط مباشر افتراضي لتجنب شاشة سوداء
-      drawRouteOnMap([[userCoords[1], userCoords[0]], [targetCoords[1], targetCoords[0]]]);
-    }
-
-    function translateInstruction(step) {
-      const type = step.maneuver.type;
-      const modifier = step.maneuver.modifier || '';
-      const name = step.name ? `في شارع (${step.name})` : '';
-
-      if (type === 'depart') return `ابدأ السير من موقعك ${name}`;
-      if (type === 'arrive') return `وصلت إلى وجهتك: ${targetName}`;
-      
-      let action = "اتجه مستقيماً";
-      if (modifier.includes('right')) action = "انعطف يميناً";
-      if (modifier.includes('left')) action = "انعطف يساراً";
-      
-      return `${action} ${name}`.trim();
     }
 
     function drawRouteOnMap(coordinates) {
@@ -531,7 +518,7 @@
               startRoutingProcess();
             } else {
               showLoading(false);
-              alert("لم نتمكن من تحديد هذا المكان، يرجى اختيار اسم من القائمة المنسدلة.");
+              alert("لم نتمكن من تحديد هذا المكان، يرجى اختيار اسم من القائمة.");
             }
           })
           .catch(() => {
@@ -545,8 +532,8 @@
 
     function startRoutingProcess() {
       document.getElementById('routeModal').style.display = 'flex';
-      document.getElementById('modalTitle').innerText = `المسار إلى: ${targetName}`;
-      fetchRealRoute();
+      document.getElementById('modalTitle').innerText = `خطّة المواصلات إلى: ${targetName}`;
+      generateTransitPlan();
     }
 
     function closeRouteModal() {
