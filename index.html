@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تطبيق المواصلات الذكي - الإصدار المطور</title>
+  <title>دليل المواصلات والتوجيه التفصيلي</title>
   
-  <!-- Leaflet CSS الخريطة -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   
   <style>
@@ -17,72 +16,65 @@
     }
 
     body {
-      background: linear-gradient(135deg, #eef2f3 0%, #8e9eab 100%);
+      background: #f1f5f9;
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 20px;
+      padding: 15px;
     }
 
-    /* كارت إدخال البيانات الرئيسي بتصميم عصري */
     .main-card {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
+      background: #ffffff;
       width: 100%;
       max-width: 480px;
-      padding: 30px;
-      border-radius: 20px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.12);
-      border: 1px solid rgba(255,255,255,0.3);
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
     }
 
     .app-header {
       text-align: center;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
     }
 
     .app-header h1 {
-      font-size: 1.6rem;
-      color: #1e293b;
-      margin-bottom: 8px;
+      font-size: 1.5rem;
+      color: #0f172a;
+      margin-bottom: 6px;
     }
 
     .app-header p {
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       color: #64748b;
     }
 
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       position: relative;
     }
 
     .form-group label {
       display: block;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: 700;
       color: #334155;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .form-control {
       width: 100%;
-      padding: 13px 16px;
+      padding: 12px 14px;
       border: 1.5px solid #cbd5e1;
-      border-radius: 12px;
-      font-size: 0.95rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
       outline: none;
-      transition: all 0.2s ease;
-      background: #ffffff;
     }
 
     .form-control:focus {
       border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
     }
 
-    /* قائمة الاقتراحات للبحث الحر */
     .suggestions-box {
       position: absolute;
       top: 100%;
@@ -90,9 +82,9 @@
       left: 0;
       background: #ffffff;
       border: 1px solid #cbd5e1;
-      border-radius: 12px;
+      border-radius: 10px;
       box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-      max-height: 200px;
+      max-height: 180px;
       overflow-y: auto;
       z-index: 100;
       display: none;
@@ -100,16 +92,11 @@
     }
 
     .suggestion-item {
-      padding: 12px 16px;
+      padding: 10px 14px;
       cursor: pointer;
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       color: #334155;
       border-bottom: 1px solid #f1f5f9;
-      transition: background 0.15s;
-    }
-
-    .suggestion-item:last-child {
-      border-bottom: none;
     }
 
     .suggestion-item:hover {
@@ -119,24 +106,21 @@
 
     .btn-submit {
       width: 100%;
-      padding: 15px;
-      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      padding: 14px;
+      background: #2563eb;
       color: #ffffff;
       border: none;
-      border-radius: 12px;
-      font-size: 1rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
       font-weight: 700;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
     }
 
     .btn-submit:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+      background: #1d4ed8;
     }
 
-    /* النافذة المنبثقة Modal */
+    /* Modal Styling */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -144,56 +128,48 @@
       width: 100vw;
       height: 100vh;
       background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(6px);
+      backdrop-filter: blur(4px);
       display: none;
       justify-content: center;
       align-items: center;
       z-index: 2000;
-      padding: 15px;
+      padding: 10px;
     }
 
     .modal-content {
       background: #ffffff;
       width: 100%;
-      max-width: 950px;
-      height: 85vh;
-      border-radius: 20px;
+      max-width: 900px;
+      height: 88vh;
+      border-radius: 16px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     }
 
     .modal-header {
-      padding: 18px 24px;
+      padding: 16px 20px;
       background: #ffffff;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid #e2e8f0;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
     .modal-header h3 {
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       color: #0f172a;
     }
 
     .close-btn {
       background: #f1f5f9;
       border: none;
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      font-size: 1rem;
       font-weight: bold;
       cursor: pointer;
       color: #64748b;
-      transition: background 0.2s;
-    }
-
-    .close-btn:hover {
-      background: #e2e8f0;
-      color: #0f172a;
     }
 
     .modal-body {
@@ -202,108 +178,83 @@
       overflow: hidden;
     }
 
-    /* تفاصيل الرحلة داخل البوب اب */
     .route-details {
-      width: 360px;
-      padding: 24px;
+      width: 380px;
+      padding: 20px;
       background: #f8fafc;
       border-left: 1px solid #e2e8f0;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 15px;
     }
 
     .summary-box {
       background: #ffffff;
-      padding: 16px;
-      border-radius: 14px;
+      padding: 14px;
+      border-radius: 10px;
       border: 1px solid #e2e8f0;
       display: flex;
       justify-content: space-around;
       text-align: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
 
     .summary-item .label {
       font-size: 0.75rem;
       color: #64748b;
-      margin-bottom: 4px;
-      font-weight: 600;
     }
 
     .summary-item .value {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       font-weight: 800;
       color: #2563eb;
     }
 
-    .timeline {
+    /* قائمة الخطوات التفصيلية */
+    .steps-list {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
     }
 
-    .timeline-step {
-      display: flex;
-      gap: 12px;
+    .step-card {
       background: #ffffff;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    }
-
-    .badge {
-      padding: 5px 10px;
-      border-radius: 8px;
-      color: white;
-      font-size: 0.75rem;
-      font-weight: bold;
-      height: fit-content;
-      white-space: nowrap;
-    }
-
-    .bg-walk { background-color: #64748b; }
-    .bg-metro { background-color: #ef4444; }
-    .bg-bus { background-color: #f97316; }
-    .bg-microbus { background-color: #0d9488; }
-
-    .step-info {
-      font-size: 0.88rem;
+      padding: 12px;
+      border-radius: 10px;
+      border-right: 4px solid #2563eb;
+      border-top: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+      border-left: 1px solid #e2e8f0;
+      font-size: 0.85rem;
       color: #334155;
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
-    /* منطقة الخريطة داخل البوب اب */
+    .step-card .step-dist {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 4px;
+      font-weight: bold;
+    }
+
     #modalMap {
       flex: 1;
       height: 100%;
     }
 
     @media (max-width: 768px) {
-      .modal-body {
-        flex-direction: column-reverse;
-      }
-      .route-details {
-        width: 100%;
-        height: 50%;
-        border-left: none;
-        border-top: 1px solid #e2e8f0;
-      }
-      #modalMap {
-        height: 50%;
-      }
+      .modal-body { flex-direction: column-reverse; }
+      .route-details { width: 100%; height: 55%; border-left: none; border-top: 1px solid #e2e8f0; }
+      #modalMap { height: 45%; }
     }
   </style>
 </head>
 <body>
 
-  <!-- الشاشة الرئيسية -->
   <div class="main-card">
     <div class="app-header">
-      <h1>دليل المواصلات الذكي</h1>
-      <p>اكتب اسم أي مكان وسنعرض لك أفضل مسار ومواصلة</p>
+      <h1>دليل الملاحة والمواصلات</h1>
+      <p>حدد وجهتك للحصول على خطة السير والشوارع التفصيلية</p>
     </div>
 
     <div class="form-group">
@@ -313,18 +264,18 @@
 
     <div class="form-group">
       <label>أين تريد الذهاب؟</label>
-      <input type="text" id="destinationInput" class="form-control" placeholder="مثال: مول العرب، عباس العقاد، محطة بنها..." oninput="searchPlaces(this.value)">
+      <input type="text" id="destinationInput" class="form-control" placeholder="اكتب اسم الشارع أو المنطقة..." oninput="searchPlaces(this.value)">
       <div id="suggestionsBox" class="suggestions-box"></div>
     </div>
 
-    <button class="btn-submit" onclick="openRouteModal()">تأكيد الموقع وعرض الخريطة</button>
+    <button class="btn-submit" onclick="openRouteModal()">عرض تفاصيل الطريق والخريطة</button>
   </div>
 
-  <!-- النافذة المنبثقة Modal -->
+  <!-- Modal Popup -->
   <div id="routeModal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="modalTitle">تفاصيل خريطة الرحلة</h3>
+        <h3 id="modalTitle">تفاصيل خطة السير</h3>
         <button class="close-btn" onclick="closeRouteModal()">✕</button>
       </div>
 
@@ -334,49 +285,49 @@
         <div class="route-details">
           <div class="summary-box">
             <div class="summary-item">
-              <div class="label">التكلفة التقديرية</div>
-              <div class="value" id="totalCost">-- ج.م</div>
+              <div class="label">المسافة الفعلية</div>
+              <div class="value" id="totalDist">-- كم</div>
             </div>
             <div class="summary-item">
-              <div class="label">الوقت المتوقع</div>
+              <div class="label">الوقت التقديري</div>
               <div class="value" id="totalTime">-- دقيقة</div>
             </div>
           </div>
 
-          <div class="timeline" id="timelineSteps"></div>
+          <h4 style="font-size: 0.9rem; color: #1e293b;">تعليمات الطريق خطوة بخطوة:</h4>
+          <div class="steps-list" id="stepsContainer"></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Leaflet JS الخريطة -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
     let map = null;
-    let userCoords = [30.0444, 31.2357]; // القاهرة افتراضياً
+    let userCoords = [30.0444, 31.2357]; // القاهرة
     let targetCoords = null;
     let targetName = "";
-    let routeLine = null;
+    let routeLayer = null;
     let markers = [];
     let searchDebounce = null;
 
-    // جلب موقع المستخدم الحالي عبر GPS
+    // تحديد موقع المستخدم
     window.onload = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             userCoords = [pos.coords.latitude, pos.coords.longitude];
-            document.getElementById('startInput').value = "تم تحديد موقعك الحالي بنجاح ✓";
+            document.getElementById('startInput').value = "تم تحديد موقعك الحالي (GPS) ✓";
           },
           () => {
-            document.getElementById('startInput').value = "الموقع الحالي (افتراضي: القاهرة)";
+            document.getElementById('startInput').value = "موقعي الحالي (ميدان التحرير، القاهرة)";
           }
         );
       }
     };
 
-    // البحث الحر عن أي مكان باستخدام Nominatim API
+    // البحث عن الأماكن
     function searchPlaces(query) {
       clearTimeout(searchDebounce);
       const box = document.getElementById('suggestionsBox');
@@ -387,15 +338,11 @@
       }
 
       searchDebounce = setTimeout(() => {
-        // البحث داخل حدود مصر
         fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=eg&limit=5&accept-language=ar`)
           .then(res => res.json())
           .then(data => {
             box.innerHTML = '';
-            if (data.length === 0) {
-              box.style.display = 'none';
-              return;
-            }
+            if (!data.length) { box.style.display = 'none'; return; }
 
             data.forEach(item => {
               const div = document.createElement('div');
@@ -410,71 +357,107 @@
               box.appendChild(div);
             });
             box.style.display = 'block';
-          })
-          .catch(() => { box.style.display = 'none'; });
-      }, 350);
+          });
+      }, 300);
     }
 
-    // حساب المسافة بالكيلومتر بين نقطتين (Haversine Formula)
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-      const R = 6371;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      return R * c;
-    }
+    // ترجمة توجيهات OSRM للعربية
+    function translateInstruction(step) {
+      const type = step.maneuver.type;
+      const modifier = step.maneuver.modifier;
+      const name = step.name ? `في الشارع (${step.name})` : '';
 
-    // خوارزمية تحديد خطوات وتكلفة الرحلة ديناميكياً بناءً على المسافة
-    function generateRouteDetails(dist) {
-      let cost, time, steps = [];
-
-      if (dist < 1.5) {
-        cost = "0 ج.م";
-        time = `${Math.round(dist * 15)} دقيقة`;
-        steps = [
-          { type: "bg-walk", badge: "مشي", text: `المسافة قصيرة جداً (${dist.toFixed(1)} كم). يمكنك الترجل مباشرة إلى وجهتك.` }
-        ];
-      } else if (dist < 8) {
-        cost = "7 - 10 ج.م";
-        time = `${Math.round(dist * 4 + 10)} دقيقة`;
-        steps = [
-          { type: "bg-walk", badge: "مشي", text: "ترجل لمدة 4 دقائق لأقرب محطة أتوبيس/سرفيس." },
-          { type: "bg-microbus", badge: "ميكروباص", text: `اركب ميكروباص اتجاه (${targetName}) وانزل عند المحطة القريبة.` },
-          { type: "bg-walk", badge: "مشي", text: "سِر لمدة دقيقتين للوصول إلى الوجهة المحددة." }
-        ];
-      } else if (dist < 25) {
-        cost = "12 - 18 ج.م";
-        time = `${Math.round(dist * 2.5 + 15)} دقيقة`;
-        steps = [
-          { type: "bg-walk", badge: "مشي", text: "اذهب إلى أقرب محطة مترو أو موقف رئيسي." },
-          { type: "bg-metro", badge: "مترو", text: "استقل المترو اتجاه أسرع محطة تبادلية لخطتك." },
-          { type: "bg-bus", badge: "أتوبيس", text: `اركب أتوبيس/ميكروباص مباشر لاستكمال المسافة نحو (${targetName}).` }
-        ];
-      } else {
-        cost = "25 - 40 ج.م";
-        time = `${Math.round(dist * 2 + 20)} دقيقة`;
-        steps = [
-          { type: "bg-walk", badge: "مشي", text: "توجه إلى موقف الأقاليم أو المحطة الرئيسية." },
-          { type: "bg-microbus", badge: "ميكروباص", text: `اركب ميكروباص رحلات/سريع وسلوك الطريق الدائري نحو (${targetName}).` }
-        ];
+      let action = "اتجه";
+      if (type === 'depart') return `ابدأ السير من موقعك ${name}`;
+      if (type === 'arrive') return `وصلت إلى وجهتك: ${targetName}`;
+      if (type === 'turn') {
+        if (modifier.includes('right')) action = "انعطف يميناً";
+        if (modifier.includes('left')) action = "انعطف يساراً";
+      } else if (type === 'continue' || type === 'new name') {
+        action = "واصل السير مستقيماً";
+      } else if (type === 'roundabout') {
+        action = "ادخل الدوار (الصينية)";
       }
 
-      return { cost, time, steps };
+      return `${action} ${name}`.trim();
     }
 
-    // فتح النافذة المنبثقة ورسم المسار
+    // جلب المسار الحقيقي من OSRM Routing API
+    function fetchRealRoute() {
+      const url = `https://router.project-osrm.org/route/v1/driving/${userCoords[1]},${userCoords[0]};${targetCoords[1]},${targetCoords[0]}?overview=full&geometries=geojson&steps=true&language=ar`;
+
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          if (!data.routes || !data.routes.length) {
+            alert("تعذر حساب المسار إلى هذه النقطة.");
+            return;
+          }
+
+          const route = data.routes[0];
+          const distanceKm = (route.distance / 1000).toFixed(1);
+          const durationMin = Math.round(route.duration / 60);
+
+          document.getElementById('totalDist').innerText = `${distanceKm} كم`;
+          document.getElementById('totalTime').innerText = `${durationMin} دقيقة`;
+
+          // عرض خطوات السير الشارع بالشارع
+          const stepsContainer = document.getElementById('stepsContainer');
+          stepsContainer.innerHTML = '';
+
+          route.legs[0].steps.forEach((step, index) => {
+            const text = translateInstruction(step);
+            const dist = step.distance > 0 ? `(المسافة: ${Math.round(step.distance)} متر)` : '';
+
+            const stepCard = document.createElement('div');
+            stepCard.className = 'step-card';
+            stepCard.innerHTML = `
+              <div><strong>الخطوة ${index + 1}:</strong> ${text}</div>
+              <div class="step-dist">${dist}</div>
+            `;
+            stepsContainer.appendChild(stepCard);
+          });
+
+          // رسم الطريق الفعلي الملتوي على الخريطة
+          drawRouteOnMap(route.geometry);
+        })
+        .catch(err => {
+          console.error(err);
+          alert("حدث خطأ أثناء جلب تفاصيل المسار.");
+        });
+    }
+
+    function drawRouteOnMap(geometry) {
+      if (!map) {
+        map = L.map('modalMap');
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap'
+        }).addTo(map);
+      }
+
+      setTimeout(() => {
+        map.invalidateSize();
+
+        markers.forEach(m => map.removeLayer(m));
+        if (routeLayer) map.removeLayer(routeLayer);
+        markers = [];
+
+        const startM = L.marker(userCoords).addTo(map).bindPopup("بداية الانطلاق").openPopup();
+        const endM = L.marker(targetCoords).addTo(map).bindPopup(targetName);
+        markers.push(startM, endM);
+
+        // تحويل GeoJSON إلى Leaflet Polyline
+        const coordinates = geometry.coordinates.map(coord => [coord[1], coord[0]]);
+        routeLayer = L.polyline(coordinates, { color: '#2563eb', weight: 5, opacity: 0.8 }).addTo(map);
+
+        map.fitBounds(routeLayer.getBounds(), { padding: [40, 40] });
+      }, 200);
+    }
+
     function openRouteModal() {
       const inputVal = document.getElementById('destinationInput').value.trim();
-      
-      if (!inputVal) {
-        alert("يرجى كتابة مكان الوصول أولاً!");
-        return;
-      }
+      if (!inputVal) { alert("يرجى كتابة مكان الوصول أولاً!"); return; }
 
-      // في حال لم يختر المستخدم من القائمة وكتب النص مباشرة
       if (!targetCoords) {
         fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(inputVal)}&countrycodes=eg&limit=1`)
           .then(res => res.json())
@@ -482,63 +465,25 @@
             if (data.length > 0) {
               targetCoords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
               targetName = data[0].display_name.split(',')[0];
-              renderModalData();
+              startRoutingProcess();
             } else {
-              alert("لم نتمكن من إيجاد هذا المكان، يرجى التأكد من كتابته بشكل صحيح.");
+              alert("لم نتمكن من تحديد هذا المكان بالضبط.");
             }
           });
       } else {
-        renderModalData();
+        startRoutingProcess();
       }
     }
 
-    function renderModalData() {
-      const modal = document.getElementById('routeModal');
-      modal.style.display = 'flex';
+    function startRoutingProcess() {
+      document.getElementById('routeModal').style.display = 'flex';
       document.getElementById('modalTitle').innerText = `المسار إلى: ${targetName}`;
-
-      const dist = calculateDistance(userCoords[0], userCoords[1], targetCoords[0], targetCoords[1]);
-      const routeData = generateRouteDetails(dist);
-
-      document.getElementById('totalCost').innerText = routeData.cost;
-      document.getElementById('totalTime').innerText = routeData.time;
-
-      const timelineEl = document.getElementById('timelineSteps');
-      timelineEl.innerHTML = routeData.steps.map(step => `
-        <div class="timeline-step">
-          <span class="badge ${step.type}">${step.badge}</span>
-          <div class="step-info">${step.text}</div>
-        </div>
-      `).join('');
-
-      setTimeout(() => {
-        if (!map) {
-          map = L.map('modalMap');
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-          }).addTo(map);
-        }
-
-        map.invalidateSize();
-
-        markers.forEach(m => map.removeLayer(m));
-        if (routeLine) map.removeLayer(routeLine);
-        markers = [];
-
-        const userMarker = L.marker(userCoords).addTo(map).bindPopup("موقعك الحالي").openPopup();
-        const destMarker = L.marker(targetCoords).addTo(map).bindPopup(targetName);
-        markers.push(userMarker, destMarker);
-
-        routeLine = L.polyline([userCoords, targetCoords], { color: '#2563eb', weight: 4, dashArray: '8, 8' }).addTo(map);
-
-        const bounds = L.latLngBounds([userCoords, targetCoords]);
-        map.fitBounds(bounds, { padding: [60, 60] });
-      }, 200);
+      fetchRealRoute();
     }
 
     function closeRouteModal() {
       document.getElementById('routeModal').style.display = 'none';
-      targetCoords = null; // إعادة ضبط للبحث القادم
+      targetCoords = null;
     }
   </script>
 </body>
